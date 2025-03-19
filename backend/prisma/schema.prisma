@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Dog {
+  Dog_ID    String  @id @default(uuid())
+  Name      String
+  Breed     String
+  Weight    Float
+  Disease   String?
+  Age       Float
+  Sex       String
+  Feeders   Feeder[]
+  Schedules Feeding_Schedule[]
+  Histories Feeding_History[]
+  AIRecommendations AI_Food_Recommendation[]
+  Notifications Notifications[]
+}
+
+model Feeder {
+  Feeder_ID     String  @id @default(uuid())
+  Food_Capacity Float
+  Current_Food  Float
+  Status        String
+  Dogs          Dog[]
+  Schedules     Feeding_Schedule[]
+  Histories     Feeding_History[]
+  Sensors       Weight_Sensor[]
+  Notifications Notifications[]
+}
+
+model Feeding_Schedule {
+  Schedule_ID  String  @id @default(uuid())
+  Feeder_ID    String
+  Dog_ID       String
+  Feeding_Time DateTime
+  Food_Amount  Float
+
+  Feeder Feeder @relation(fields: [Feeder_ID], references: [Feeder_ID])
+  Dog    Dog    @relation(fields: [Dog_ID], references: [Dog_ID])
+}
+
+model Feeding_History {
+  History_ID       String  @id @default(uuid())
+  Feeder_ID        String
+  Dog_ID           String
+  Date             DateTime
+  Time             DateTime
+  Given_Amount     Float
+  Remaining_Amount Float
+  Image_Captured   String?
+
+  Feeder Feeder @relation(fields: [Feeder_ID], references: [Feeder_ID])
+  Dog    Dog    @relation(fields: [Dog_ID], references: [Dog_ID])
+}
+
+model Weight_Sensor {
+  Sensor_ID       String  @id @default(uuid())
+  Feeder_ID       String
+  Measured_Weight Float
+  Timestamp       DateTime
+
+  Feeder Feeder @relation(fields: [Feeder_ID], references: [Feeder_ID])
+}
+
+model AI_Food_Recommendation {
+  Recommendation_ID   String  @id @default(uuid())
+  Dog_ID             String
+  Recommended_Breakfast Float
+  Recommended_Lunch    Float
+  Recommended_Dinner   Float
+  Date_Generated      DateTime
+
+  Dog Dog @relation(fields: [Dog_ID], references: [Dog_ID])
+}
+
+model Notifications {
+  Notification_ID String  @id @default(uuid())
+  Feeder_ID       String
+  Dog_ID          String
+  Message         String
+  Timestamp       DateTime
+
+  Feeder Feeder @relation(fields: [Feeder_ID], references: [Feeder_ID])
+  Dog    Dog    @relation(fields: [Dog_ID], references: [Dog_ID])
+}
