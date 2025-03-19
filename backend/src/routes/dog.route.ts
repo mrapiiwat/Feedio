@@ -9,5 +9,4 @@ router.get('/dog/:id', dogController.getDogById);
 // router.put('/dog/:id', dogController.updateDog);
 // router.delete('/dog/:id', dogController.deleteDog);
 
-
 export default router;

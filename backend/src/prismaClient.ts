@@ -11,8 +11,6 @@ const connectToDatabase = async () => {
   }
 };
 
-
-// Call the function to connect to the database
 connectToDatabase();
 
 export default prisma;
