@@ -51,7 +51,9 @@ export const createDog = async (req: Request, res: Response) => {
   try {
     const validatedData = DogSchema.parse(req.body);
     const dog = await dogService.createDog(validatedData);
-    res.status(StatusCodes.CREATED).json(dog);
+    res
+      .status(StatusCodes.CREATED)
+      .json({ message: "Dog created successfully" });
   } catch (error) {
     if (error instanceof ZodError) {
       res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
