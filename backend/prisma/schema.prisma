@@ -80,7 +80,7 @@ model AI_Food_Recommendation {
   Recommended_Breakfast Float
   Recommended_Lunch    Float
   Recommended_Dinner   Float
-  Date_Generated      DateTime
+  Date_Generated      DateTime @default(now())
 
   Dog Dog @relation(fields: [Dog_ID], references: [Dog_ID])
 }
