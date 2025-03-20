@@ -9,6 +9,13 @@ export const getDogById = async (id: string) => {
     where: {
       Dog_ID: id,
     },
+    include: {
+      Feeders: true,
+      Schedules: true,
+      Histories: true,
+      AIRecommendations: true,
+      Notifications: true,
+    },
   });
 };
 

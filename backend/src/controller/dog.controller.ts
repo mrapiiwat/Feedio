@@ -9,10 +9,17 @@ export const getDogs = async (req: Request, res: Response) => {
     const dogs = await dogService.getAllDogs();
     res.status(StatusCodes.OK).json(dogs);
   } catch (error) {
-    console.error("Error fetching dogs:", error);
-    res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Internal server error" });
+    if (error instanceof ZodError) {
+      res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
+    } else if (error instanceof Error) {
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: error.message,
+      });
+    } else {
+      res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: "Unknown error occurred" });
+    }
   }
 };
 
@@ -26,25 +33,37 @@ export const getDogById = async (req: Request, res: Response) => {
       res.status(StatusCodes.NOT_FOUND).json({ message: "Dog not found" });
     }
   } catch (error) {
-    console.error("Error fetching dog by ID:", error);
-    res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Internal server error" });
+    if (error instanceof ZodError) {
+      res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
+    } else if (error instanceof Error) {
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: error.message,
+      });
+    } else {
+      res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: "Unknown error occurred" });
+    }
   }
 };
+
 export const createDog = async (req: Request, res: Response) => {
   try {
     const validatedData = DogSchema.parse(req.body);
-    const dogData = await dogService.createDog(validatedData);
-    res.status(StatusCodes.CREATED).json(dogData);
+    const dog = await dogService.createDog(validatedData);
+    res.status(StatusCodes.CREATED).json(dog);
   } catch (error) {
     if (error instanceof ZodError) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
+      res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
+    } else if (error instanceof Error) {
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: error.message,
+      });
+    } else {
+      res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: "Unknown error occurred" });
     }
-    console.error("Error creating dog:", error);
-    res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Internal server error" });
   }
 };
 
@@ -54,21 +73,23 @@ export const updateDog = async (req: Request, res: Response) => {
     const validatedData = DogSchema.parse(req.body);
     const updatedDog = await dogService.updateDog(dogId, validatedData);
 
-    if (!updatedDog) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Dog not found" });
+    if (updatedDog) {
+      res.status(StatusCodes.OK).json(updatedDog);
+    } else {
+      res.status(StatusCodes.NOT_FOUND).json({ message: "Dog not found" });
     }
-
-    res.status(StatusCodes.OK).json(updatedDog);
   } catch (error) {
     if (error instanceof ZodError) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
+      res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
+    } else if (error instanceof Error) {
+      res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: "Internal server error" });
+    } else {
+      res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: "Unknown error occurred" });
     }
-    console.error("Error updating dog:", error);
-    res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Internal server error" });
   }
 };
 
@@ -77,17 +98,22 @@ export const deleteDog = async (req: Request, res: Response) => {
     const dogId = req.params.id;
     const deletedDog = await dogService.deleteDog(dogId);
 
-    if (!deletedDog) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Dog not found" });
+    if (deletedDog) {
+      res.status(StatusCodes.OK).json({ message: "Dog deleted successfully" });
+    } else {
+      res.status(StatusCodes.NOT_FOUND).json({ message: "Dog not found" });
     }
-
-    res.status(StatusCodes.OK).json({ message: "Dog deleted successfully" });
   } catch (error) {
-    console.error("Error deleting dog:", error);
-    res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "Internal server error" });
+    if (error instanceof ZodError) {
+      res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
+    } else if (error instanceof Error) {
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: error.message,
+      });
+    } else {
+      res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: "Unknown error occurred" });
+    }
   }
 };
