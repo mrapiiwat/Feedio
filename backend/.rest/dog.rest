@@ -2,7 +2,7 @@
 GET http://localhost:5000/api/dog
 
 ###GET dog by id: http://localhost:5000/api/dog/:id
-GET http://localhost:5000/api/dog/7a44a1dc-f411-4463-a72e-5f9de74e90b3
+GET http://localhost:5000/api/dog/b3a8c781-4281-414
 
 ###Create a new dog: http://localhost:5000/api/dog
 POST http://localhost:5000/api/dog
@@ -19,18 +19,17 @@ Content-Type: application/json
 
 
 ###UPDATE dog by id: http://localhost:5000/api/dog/:id
-PUT http://localhost:5000/api/dog/4371c1f5-91f8-4a95-897a-0697f7c4fdbb
+PUT http://localhost:5000/api/dog/b3a8c781-4281-4140-88f3-ac3dc0f73285
 Content-Type: application/json
 
 {
   "Name": "Momo",
   "Breed": "Poodle",
-  "Weight": 15,
+  "Weight": 7,
   "Disease": "Obesity",
-  "Age": 8,
+  "Age": 3,
   "Sex": "Male"
 }
 
 ###DELETE dog by id: http://localhost:5000/api/dog/:id
-DELETE http://localhost:5000/api/dog/7a44a1dc-f411-4463-a72e-5f9de74e90b3
-
+DELETE http://localhost:5000/api/dog/b3a8c781-4281-4140-88f3-ac3dc0f73285

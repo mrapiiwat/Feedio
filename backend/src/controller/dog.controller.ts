@@ -3,10 +3,16 @@ import { DogSchema } from "../models/dog.models";
 import { ZodError } from "zod";
 import { StatusCodes } from "http-status-codes";
 import * as dogService from "../service/dog.service";
+import * as recomController from "../controller/recommendation.controller";
 
 export const getDogs = async (req: Request, res: Response) => {
   try {
     const dogs = await dogService.getAllDogs();
+    if (dogs.length === 0) {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        message: "No dogs found",
+      });
+    }
     res.status(StatusCodes.OK).json(dogs);
   } catch (error) {
     if (error instanceof ZodError) {
@@ -54,6 +60,10 @@ export const createDog = async (req: Request, res: Response) => {
     res
       .status(StatusCodes.CREATED)
       .json({ message: "Dog created successfully", dog });
+
+    // Create a recommendation for the newly created dog
+    req.body.dogId = dog.Dog_ID;
+    await recomController.createRecommendation(req, res);
   } catch (error) {
     if (error instanceof ZodError) {
       res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
@@ -74,6 +84,13 @@ export const updateDog = async (req: Request, res: Response) => {
     const dogId = req.params.id;
     const validatedData = DogSchema.parse(req.body);
     const updatedDog = await dogService.updateDog(dogId, validatedData);
+
+    req.body.dogId = dogId;
+    const recom = await recomController.getRecommendationByDogId(req, res);
+    recom?.map((rec) => {
+      req.params.id = rec.Recommendation_ID;
+    });
+    await recomController.updateRecommendation(req, res);
 
     if (updatedDog) {
       res
@@ -100,6 +117,13 @@ export const updateDog = async (req: Request, res: Response) => {
 export const deleteDog = async (req: Request, res: Response) => {
   try {
     const dogId = req.params.id;
+    req.params.id = dogId;
+    const recom = await recomController.getRecommendationByDogId(req, res);
+    recom?.map((rec) => {
+      req.params.id = rec.Recommendation_ID;
+    });
+
+    await recomController.deleteRecommendation(req, res);
     const deletedDog = await dogService.deleteDog(dogId);
 
     if (deletedDog) {
