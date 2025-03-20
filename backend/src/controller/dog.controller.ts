@@ -53,7 +53,7 @@ export const createDog = async (req: Request, res: Response) => {
     const dog = await dogService.createDog(validatedData);
     res
       .status(StatusCodes.CREATED)
-      .json({ message: "Dog created successfully" });
+      .json({ message: "Dog created successfully", dog });
   } catch (error) {
     if (error instanceof ZodError) {
       res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
@@ -76,7 +76,9 @@ export const updateDog = async (req: Request, res: Response) => {
     const updatedDog = await dogService.updateDog(dogId, validatedData);
 
     if (updatedDog) {
-      res.status(StatusCodes.OK).json(updatedDog);
+      res
+        .status(StatusCodes.OK)
+        .json({ message: "Dog updated successfully", updatedDog });
     } else {
       res.status(StatusCodes.NOT_FOUND).json({ message: "Dog not found" });
     }
