@@ -10,7 +10,6 @@ export const getDogById = async (id: string) => {
       Dog_ID: id,
     },
     include: {
-      Feeders: true,
       Schedules: true,
       Histories: true,
       AIRecommendations: true,
@@ -21,7 +20,14 @@ export const getDogById = async (id: string) => {
 
 export const createDog = async (dogData: any) => {
   return await prisma.dog.create({
-    data: dogData,
+    data: {
+      Name: dogData.name,
+      Breed: dogData.breed,
+      Weight: dogData.weight,
+      Disease:dogData.disease,
+      Age: dogData.age,
+      Sex: dogData.sex,
+    },
   });
 };
 

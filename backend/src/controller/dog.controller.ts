@@ -8,12 +8,13 @@ import * as recomController from "../controller/recommendation.controller";
 export const getDogs = async (req: Request, res: Response) => {
   try {
     const dogs = await dogService.getAllDogs();
-    if (dogs.length === 0) {
-      res.status(StatusCodes.BAD_REQUEST).json({
-        message: "No dogs found",
-      });
+    if (dogs) {
+      res
+        .status(StatusCodes.OK)
+        .json({ message: "Get all dogs successfully", dogs });
+    } else {
+      res.status(StatusCodes.NOT_FOUND).json({ message: "No dogs found" });
     }
-    res.status(StatusCodes.OK).json(dogs);
   } catch (error) {
     if (error instanceof ZodError) {
       res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
@@ -34,7 +35,10 @@ export const getDogById = async (req: Request, res: Response) => {
     const dog = await dogService.getDogById(req.params.id);
 
     if (dog) {
-      res.status(StatusCodes.OK).json(dog);
+      res.status(StatusCodes.OK).json({
+        message: `Dog with ID: ${req.params.id} retrieved successfully`,
+        dog,
+      });
     } else {
       res.status(StatusCodes.NOT_FOUND).json({ message: "Dog not found" });
     }

@@ -30,12 +30,16 @@ export const getRecommendationById = async (req: Request, res: Response) => {
     const recommendation = await recomService.getRecommendationById(
       recommendationId
     );
-    if (!recommendation) {
+    if (recommendation) {
+      res.status(StatusCodes.OK).json({
+        message: `Recommendation with ID: ${recommendationId}`,
+        recommendation,
+      });
+    } else {
       res
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "Recommendation not found" });
     }
-    res.status(StatusCodes.OK).json(recommendation);
   } catch (error) {
     if (error instanceof ZodError) {
       res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
@@ -55,10 +59,6 @@ export const createRecommendation = async (req: Request, res: Response) => {
   try {
     const validatedData = RecommendationSchema.parse(req.body);
     const dog = await recomService.dogData(validatedData.dogId);
-
-    if (!dog) {
-      res.status(StatusCodes.NOT_FOUND).json({ message: "Dog not found" });
-    }
 
     const recomBrekfast = await chatWithAI(
       `Give me a breakfast recommendation for a dog with the following details: ${JSON.stringify(
@@ -121,10 +121,6 @@ export const updateRecommendation = async (req: Request, res: Response) => {
     const recommendationId = req.params.id;
     const validatedData = RecommendationSchema.parse(req.body);
     const dog = await recomService.dogData(validatedData.dogId);
-
-    if (!dog) {
-      res.status(StatusCodes.NOT_FOUND).json({ message: "Dog not found" });
-    }
 
     const recomBrekfast = await chatWithAI(
       `Give me a breakfast recommendation for a dog with the following details: ${JSON.stringify(

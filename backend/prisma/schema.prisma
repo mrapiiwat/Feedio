@@ -32,7 +32,9 @@ model Feeder {
   Feeder_ID     String  @id @default(uuid())
   Food_Capacity Float
   Current_Food  Float
-  Status        String
+  Status        Boolean @default(true)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
   Dogs          Dog[]
   Schedules     Feeding_Schedule[]
   Histories     Feeding_History[]

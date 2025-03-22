@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 // Import routes
 import dogRoutes from "./routes/dog.route";
 import recommendationRoutes from "./routes/recommendation.route";
+import feederRoutes from "./routes/feeder.route";
 
 const app = express();
 app.use(cors());
@@ -17,6 +18,7 @@ const port = process.env.PORT ? parseInt(process.env.PORT) : 5000;
 //Routes
 app.use("/api", dogRoutes); 
 app.use("/api", recommendationRoutes);
+app.use("/api", feederRoutes);
 
 
 app.listen(port, "0.0.0.0", () => {

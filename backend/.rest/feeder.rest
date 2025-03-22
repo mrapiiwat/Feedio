@@ -1,0 +1,29 @@
+### GET all Feeder: http://localhost:5000/api/feeder
+GET http://localhost:5000/api/feeder
+
+###GET Feeder by id: http://localhost:5000/api/feeder/:id
+GET http://localhost:5000/api/feeder/152cb04f-a989-4ba3-a1f6-c92fbfe5dcdf
+
+###Create a new Feeder: http://localhost:5000/api/feeder
+POST http://localhost:5000/api/feeder
+Content-Type: application/json
+
+{
+  "food_capa": 2,
+  "current_food": 1
+}
+
+
+###UPDATE Feeder by id: http://localhost:5000/api/feeder/:id
+PUT http://localhost:5000/api/feeder/152cb04f-a989-4ba3-a1f6-c92fbfe5dcdf
+Content-Type: application/json
+
+{
+  "food_capa": 500,
+  "current_food": 100,
+  "status": true
+}
+
+###DELETE Feeder by id: http://localhost:5000/api/feeder/:id
+DELETE http://localhost:5000/api/feeder/152cb04f-a989-4ba3-a1f6-c92fbfe5dcdf
+

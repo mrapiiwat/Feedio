@@ -2,35 +2,35 @@
 GET http://localhost:5000/api/dog
 
 ###GET dog by id: http://localhost:5000/api/dog/:id
-GET http://localhost:5000/api/dog/eb5929e8-b73a-45d9-b88f-8bed308d1547
+GET http://localhost:5000/api/dog/7f32e64f-d667-4285-bab2-c3650e2a76c1
 
 ###Create a new dog: http://localhost:5000/api/dog
 POST http://localhost:5000/api/dog
 Content-Type: application/json
 
 {
-  "Name": "Momo",
-  "Breed": "Poodle",
-  "Weight": 14,
-  "Disease": "Obesity",
-  "Age": 8,
-  "Sex": "Male"
+  "name": "Momo",
+  "breed": "Poodle",
+  "weight": 14,
+  "disease": "Obesity",
+  "age": 8,
+  "sex": "Male"
 }
 
 
 ###UPDATE dog by id: http://localhost:5000/api/dog/:id
-PUT http://localhost:5000/api/dog/b3a8c781-4281-4140-88f3-ac3dc0f73285
+PUT http://localhost:5000/api/dog/eb63bfff-ec8e-4c0d-b692-3ef7792967f0
 Content-Type: application/json
 
 {
-  "Name": "Momo",
-  "Breed": "Poodle",
-  "Weight": 7,
-  "Disease": "Obesity",
-  "Age": 3,
-  "Sex": "Male"
+  "name": "Momo",
+  "breed": "Poodle",
+  "weight": 7,
+  "disease": "Obesity",
+  "age": 3,
+  "sex": "Male"
 }
 
 ###DELETE dog by id: http://localhost:5000/api/dog/:id
-DELETE http://localhost:5000/api/dog/eb5929e8-b73a-45d9-b88f-8bed308d1547
+DELETE http://localhost:5000/api/dog/dc7b34fb-16f9-4d97-8fc6-1959616b01e3
 
