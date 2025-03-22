@@ -51,7 +51,7 @@ CREATE TABLE "Weight_Sensor" (
     "Sensor_ID" TEXT NOT NULL,
     "Feeder_ID" TEXT NOT NULL,
     "Measured_Weight" DOUBLE PRECISION NOT NULL,
-    "Timestamp" TIMESTAMP(3) NOT NULL,
+    "Timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Weight_Sensor_pkey" PRIMARY KEY ("Sensor_ID")
 );
@@ -63,7 +63,8 @@ CREATE TABLE "AI_Food_Recommendation" (
     "Recommended_Breakfast" DOUBLE PRECISION NOT NULL,
     "Recommended_Lunch" DOUBLE PRECISION NOT NULL,
     "Recommended_Dinner" DOUBLE PRECISION NOT NULL,
-    "Date_Generated" TIMESTAMP(3) NOT NULL,
+    "Date_Generated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "AI_Food_Recommendation_pkey" PRIMARY KEY ("Recommendation_ID")
 );
@@ -74,7 +75,7 @@ CREATE TABLE "Notifications" (
     "Feeder_ID" TEXT NOT NULL,
     "Dog_ID" TEXT NOT NULL,
     "Message" TEXT NOT NULL,
-    "Timestamp" TIMESTAMP(3) NOT NULL,
+    "Timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Notifications_pkey" PRIMARY KEY ("Notification_ID")
 );

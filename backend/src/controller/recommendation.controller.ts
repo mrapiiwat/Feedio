@@ -24,6 +24,33 @@ export const getRecommendation = async (req: Request, res: Response) => {
   }
 };
 
+export const getRecommendationById = async (req: Request, res: Response) => {
+  try {
+    const recommendationId = req.params.id;
+    const recommendation = await recomService.getRecommendationById(
+      recommendationId
+    );
+    if (!recommendation) {
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Recommendation not found" });
+    }
+    res.status(StatusCodes.OK).json(recommendation);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
+    } else if (error instanceof Error) {
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: error.message,
+      });
+    } else {
+      res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: "Unknown error occurred" });
+    }
+  }
+};
+
 export const createRecommendation = async (req: Request, res: Response) => {
   try {
     const validatedData = RecommendationSchema.parse(req.body);

@@ -1,0 +1,5 @@
+### GET all dogs: http://localhost:5000/api/recom
+GET http://localhost:5000/api/recom
+
+###GET dog by id: http://localhost:5000/api/recom/:id
+GET http://localhost:5000/api/recom/d7395368-0fe9-48d4-833c-46dd7b1ff862

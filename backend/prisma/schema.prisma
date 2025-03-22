@@ -69,7 +69,7 @@ model Weight_Sensor {
   Sensor_ID       String  @id @default(uuid())
   Feeder_ID       String
   Measured_Weight Float
-  Timestamp       DateTime
+  Timestamp       DateTime @default(now())
 
   Feeder Feeder @relation(fields: [Feeder_ID], references: [Feeder_ID])
 }
@@ -81,6 +81,7 @@ model AI_Food_Recommendation {
   Recommended_Lunch    Float
   Recommended_Dinner   Float
   Date_Generated      DateTime @default(now())
+  updated_at         DateTime @updatedAt
 
   Dog Dog @relation(fields: [Dog_ID], references: [Dog_ID])
 }
@@ -90,7 +91,7 @@ model Notifications {
   Feeder_ID       String
   Dog_ID          String
   Message         String
-  Timestamp       DateTime
+  Timestamp       DateTime @default(now())
 
   Feeder Feeder @relation(fields: [Feeder_ID], references: [Feeder_ID])
   Dog    Dog    @relation(fields: [Dog_ID], references: [Dog_ID])
