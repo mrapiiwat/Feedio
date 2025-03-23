@@ -7,19 +7,17 @@ import * as feederService from "../service/feeder.service";
 export const getFeeders = async (req: Request, res: Response) => {
   try {
     const feeders = await feederService.getAllFeeder();
-    if (feeders) {
+    if (feeders && feeders.length > 0) {
       res
         .status(StatusCodes.OK)
         .json({ message: "Get all feeders successfully", feeders });
-    } else {
+    } else if (feeders && feeders.length === 0) {
       res.status(StatusCodes.NOT_FOUND).json({
         message: "No feeders found",
       });
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
-    } else if (error instanceof Error) {
+    if (error instanceof Error) {
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: error.message,
       });
@@ -46,9 +44,7 @@ export const getFeederById = async (req: Request, res: Response) => {
       });
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
-    } else if (error instanceof Error) {
+    if (error instanceof Error) {
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: error.message,
       });
@@ -127,9 +123,7 @@ export const deleteFeeder = async (req: Request, res: Response) => {
       });
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
-    } else if (error instanceof Error) {
+    if (error instanceof Error) {
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: error.message,
       });

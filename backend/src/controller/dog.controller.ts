@@ -8,17 +8,17 @@ import * as recomController from "../controller/recommendation.controller";
 export const getDogs = async (req: Request, res: Response) => {
   try {
     const dogs = await dogService.getAllDogs();
-    if (dogs) {
-      res
-        .status(StatusCodes.OK)
-        .json({ message: "Get all dogs successfully", dogs });
-    } else {
+
+    if (dogs && dogs.length > 0) {
+      res.status(StatusCodes.OK).json({
+        message: "Get all dogs successfully",
+        dogs,
+      });
+    } else if (dogs && dogs.length === 0) {
       res.status(StatusCodes.NOT_FOUND).json({ message: "No dogs found" });
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
-    } else if (error instanceof Error) {
+    if (error instanceof Error) {
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: error.message,
       });
@@ -40,12 +40,12 @@ export const getDogById = async (req: Request, res: Response) => {
         dog,
       });
     } else {
-      res.status(StatusCodes.NOT_FOUND).json({ message: "Dog not found" });
+      res.status(StatusCodes.NOT_FOUND).json({
+        message: `Dog with ID: ${req.params.id} not found`,
+      });
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
-    } else if (error instanceof Error) {
+    if (error instanceof Error) {
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: error.message,
       });
@@ -136,9 +136,7 @@ export const deleteDog = async (req: Request, res: Response) => {
       res.status(StatusCodes.NOT_FOUND).json({ message: "Dog not found" });
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
-    } else if (error instanceof Error) {
+    if (error instanceof Error) {
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: error.message,
       });

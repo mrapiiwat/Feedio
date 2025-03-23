@@ -8,11 +8,18 @@ import { chatWithAI } from "../config/openai";
 export const getRecommendation = async (req: Request, res: Response) => {
   try {
     const recom = await recomService.getAllRecommendations();
-    res.status(StatusCodes.OK).json(recom);
+    if (recom && recom.length > 0) {
+      res.status(StatusCodes.OK).json({
+        message: "Get all recommendations successfully",
+        recom,
+      });
+    } else if (recom && recom.length === 0) {
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "No recommendations found" });
+    }
   } catch (error) {
-    if (error instanceof ZodError) {
-      res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
-    } else if (error instanceof Error) {
+    if (error instanceof Error) {
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: error.message,
       });
@@ -41,9 +48,7 @@ export const getRecommendationById = async (req: Request, res: Response) => {
         .json({ message: "Recommendation not found" });
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
-    } else if (error instanceof Error) {
+    if (error instanceof Error) {
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: error.message,
       });
@@ -102,9 +107,7 @@ export const deleteRecommendation = async (req: Request, res: Response) => {
     const recommendationId = req.params.id;
     await recomService.deleteRecommendation(recommendationId);
   } catch (error) {
-    if (error instanceof ZodError) {
-      res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
-    } else if (error instanceof Error) {
+    if (error instanceof Error) {
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: error.message,
       });
@@ -170,9 +173,7 @@ export const getRecommendationByDogId = async (req: Request, res: Response) => {
     }
     return recommendation;
   } catch (error) {
-    if (error instanceof ZodError) {
-      res.status(StatusCodes.BAD_REQUEST).json({ errors: error.errors });
-    } else if (error instanceof Error) {
+    if (error instanceof Error) {
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: error.message,
       });
