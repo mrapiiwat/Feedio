@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Feeding_Schedule" ALTER COLUMN "Feeding_Time" SET DEFAULT CURRENT_TIMESTAMP;

@@ -2,7 +2,7 @@
 GET http://localhost:5000/api/dog
 
 ###GET dog by id: http://localhost:5000/api/dog/:id
-GET http://localhost:5000/api/dog/14251955-9c27-451a-b76e-3f05efff8b
+GET http://localhost:5000/api/dog/14251955-9c27-451a-b76e-3f05efff8bf6
 
 ###Create a new dog: http://localhost:5000/api/dog
 POST http://localhost:5000/api/dog

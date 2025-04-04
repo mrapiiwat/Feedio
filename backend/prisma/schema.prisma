@@ -46,7 +46,7 @@ model Feeding_Schedule {
   Schedule_ID  String  @id @default(uuid())
   Feeder_ID    String
   Dog_ID       String
-  Feeding_Time DateTime
+  Feeding_Time DateTime @default(now())
   Food_Amount  Float
 
   Feeder Feeder @relation(fields: [Feeder_ID], references: [Feeder_ID])
