@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import dotenv from "dotenv";
+import rateLimit from "express-rate-limit";
 
 // Import swagger
 import { setupSwagger } from "./config/swagger";
@@ -22,6 +23,15 @@ setupSwagger(app); // Initialize Swagger documentation
 app.use(morgan("dev"));
 app.use(express.json());
 const port = process.env.PORT ? parseInt(process.env.PORT) : 5000;
+
+// Limit requests per IP
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 10,
+  message: "Too many requests, please try again later.",
+});
+
+app.use(limiter); // Apply rate limiting to all requests
 
 //Routes
 app.use("/api", dogRoutes);
