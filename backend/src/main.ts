@@ -12,6 +12,7 @@ import recommendationRoutes from "./routes/recommendation.route";
 import feederRoutes from "./routes/feeder.route";
 import scheduleRoutes from "./routes/schedule.routes";
 import notificationRoutes from "./routes/notification.route";
+import weightSensorRoutes from "./routes/wrightSensor.route";
 
 const app = express();
 app.use(cors());
@@ -27,6 +28,7 @@ app.use("/api", recommendationRoutes);
 app.use("/api", feederRoutes);
 app.use("/api", scheduleRoutes);
 app.use("/api", notificationRoutes);
+app.use("/api", weightSensorRoutes);
 
 
 app.listen(port, "0.0.0.0", () => {
