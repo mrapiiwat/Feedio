@@ -11,6 +11,7 @@ import dogRoutes from "./routes/dog.route";
 import recommendationRoutes from "./routes/recommendation.route";
 import feederRoutes from "./routes/feeder.route";
 import scheduleRoutes from "./routes/schedule.routes";
+import notificationRoutes from "./routes/notification.route";
 
 const app = express();
 app.use(cors());
@@ -25,6 +26,8 @@ app.use("/api", dogRoutes);
 app.use("/api", recommendationRoutes);
 app.use("/api", feederRoutes);
 app.use("/api", scheduleRoutes);
+app.use("/api", notificationRoutes);
+
 
 app.listen(port, "0.0.0.0", () => {
   console.log(`🚀 Server is running on http://localhost:${port}`);
