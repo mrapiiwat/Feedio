@@ -1,5 +1,6 @@
 import { Router } from "express";
 import * as historyController from "../controller/history.controller";
+import { upload } from './../middleware/upload';
 const router = Router();
 
 /**
@@ -254,6 +255,6 @@ router.get("/history/:id", historyController.getHistoryById);
  *                   type: string
  *                   example: "Internal Server Error"
  */
-router.post("/history", historyController.createHistory);
+router.post("/history", upload.single("image_Captured"), historyController.createHistory);
 
 export default router;
