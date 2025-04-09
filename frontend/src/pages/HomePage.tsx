@@ -1,6 +1,6 @@
 import React from "react";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+//import Navbar from "../components/Navbar";
+//import Footer from "../components/Footer";
 import dogImage from "../assets/dog.png";
 import TotolFoodImage from "../assets/อาหารทั้งหมด.png";
 import RemainingFoodImage from "../assets/อาหารเหลือ.png";
@@ -9,7 +9,6 @@ import IconFood from "../assets/iconfood.png";
 const HomePage: React.FC = () => {
   return (
     <div className="bg-[#F9F3E3] min-h-screen">
-      <Navbar />
       <main className="p-6">
         {/* ส่วนที่ 1: ข้อความหัว */}
         <h1 className="text-3xl font-bold text-center text-brown-800 font-kanit">
@@ -82,8 +81,6 @@ const HomePage: React.FC = () => {
           <div className="bg-cream pt-6 pb-10"></div>
         </div>
       </main>
-      {/* ส่วนที่ 5: Footer รายละเอียดข้างล่าง */}
-      <Footer />
     </div>
   );
 };
