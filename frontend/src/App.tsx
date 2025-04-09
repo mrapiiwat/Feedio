@@ -1,11 +1,7 @@
-import React from "react"
+import HomePage from "./pages/HomePage";
 
-const App:React.FC = () => {
-  return (
-    <h1 className="text-3xl font-bold underline">
-      Hello world!
-    </h1>
-  )
+function App() {
+  return <HomePage />;
 }
 
-export default App
+export default App;

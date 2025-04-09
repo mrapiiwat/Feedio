@@ -5,7 +5,27 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        kanit: ['Kanit', 'sans-serif'],
+      },
+    },
   },
   plugins: [],
 }
+module.exports = {
+  content: ["./src/**/*.{js,ts,jsx,tsx}"],
+  theme: {
+    extend: {
+      colors: {
+        'brown': {
+          800: '#4D2C1D',
+          500: '#8B5E3C',
+        },
+        'cream': '#F9F3E3',
+      }
+    },
+  },
+  plugins: [],
+}
+

@@ -19,10 +19,14 @@ const Foodio: React.FC = () => {
 
           <div className="mt-6 bg-gray-200 p-4 rounded-lg">
             <div className="text-gray-600">ปรับปริมาณอาหารตามสัดส่วน</div>
-            <div className="mt-2 text-red-600 font-bold text-2xl">000.0 กรัม</div>
+            <div className="mt-2 text-red-600 font-bold text-2xl">
+              000.0 กรัม
+            </div>
           </div>
 
-          <div className="mt-6 text-gray-700 text-lg font-bold">ใน 1 อาทิตย์...</div>
+          <div className="mt-6 text-gray-700 text-lg font-bold">
+            ใน 1 อาทิตย์...
+          </div>
           <div className="flex justify-center gap-8 mt-4">
             <div className="text-center">
               <div className="w-32 h-32 border-2 border-gray-300 rounded-lg flex items-center justify-center">
@@ -47,7 +51,9 @@ const Foodio: React.FC = () => {
             <h3 className="font-bold">บริการ</h3>
             <button className="block text-white mt-2">บอกบ๊อก</button>
             <button className="block text-white mt-2">สถิติการกินอาหาร</button>
-            <button className="block text-white mt-2">รายละเอียดการให้อาหาร</button>
+            <button className="block text-white mt-2">
+              รายละเอียดการให้อาหาร
+            </button>
           </div>
           <div>
             <h3 className="font-bold">รู้จักกับเรา</h3>
