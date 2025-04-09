@@ -58,7 +58,7 @@ const HomePage: React.FC = () => {
                 className="rounded-xl mx-auto mt-6"
                 style={{ width: "300px", height: "250px" }} // กำหนดขนาดของรูปภาพถ้วยอาหารทั้งหมด
               />
-              <p className="text-center mt-2">
+              <p className="text-center mt-2 text-[#E94F1D]">
                 กินไปทั้งหมด
                 <br />
                 00.0 กรัม
@@ -71,7 +71,7 @@ const HomePage: React.FC = () => {
                 className="rounded-xl mx-auto mt-6"
                 style={{ width: "300px", height: "250px" }} // กำหนดขนาดของรูปภาพถ้วยอาหารคงเหลือ
               />
-              <p className="text-center mt-2">
+              <p className="text-center mt-2 text-[#E94F1D]">
                 กินเหลือ
                 <br />
                 00.0 กรัม

@@ -11,7 +11,7 @@ const Footer: React.FC = () => {
           <ul className="space-y-1">
             <li><Link to="/blog">บ๊อกบ๊อก</Link></li>
             <li><Link to="/statistics">สถิติการกินอาหาร</Link></li>
-            <li><a href="#" className="hover:underline">รายละเอียดการให้อาหาร</a></li>
+            <li><Link to="/feederdetail">รายละเอียดการให้อาหาร</Link></li>
           </ul>
         </div>
         <div>

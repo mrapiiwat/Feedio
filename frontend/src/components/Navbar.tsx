@@ -13,15 +13,10 @@ const Navbar: React.FC = () => {
         {/* เมนู */}
         <ul className="flex space-x-6">
           <li>
-            <NavLink
-              to="/schedule"
-              className={({ isActive }) =>
-                isActive
-                  ? "text-[#E94F1D] font-bold underline"
-                  : "hover:underline"
+            <NavLink to="/feederdetail"className={({ isActive }) =>isActive? "text-[#E94F1D] font-bold underline": "hover:underline"
               }
             >
-              ตั้งเวลา
+              รายละเอียดการให้อาหาร
             </NavLink>
           </li>
           <li>
