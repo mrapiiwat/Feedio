@@ -4,6 +4,7 @@ import Milo1 from "../assets/Milo1.png";
 import meal1 from "../assets/meal-1.png";
 import meal2 from "../assets/meal-2.png";
 import meal3 from "../assets/meal-3.png";
+import { motion } from "framer-motion";
 
 const FeederDetailPage: React.FC = () => {
   const meals = [
@@ -13,6 +14,13 @@ const FeederDetailPage: React.FC = () => {
   ];
 
   return (
+    <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4 }}
+          className="px-4 py-8"
+        >
     <div className="max-w-6xl mx-auto px-6 py-10 text-[#4D2C1D]">
       <div className="grid md:grid-cols-2 gap-10 items-center">
         {/* รูปน้องหมา */}
@@ -44,12 +52,17 @@ const FeederDetailPage: React.FC = () => {
           </div>
 
           {/* ให้อาหารเพิ่ม */}
-          <h3 className="text-xl font-bold text-center">อยากให้อาหารเพิ่มไหม?</h3>
-
+          <h3 className="text-xl font-bold text-center">
+            อยากให้อาหารเพิ่มไหม?
+          </h3>
           <div className="text-center">
-            <button className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-6 rounded-xl shadow-md">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-6 rounded-xl shadow-md"
+            >
               🍲 ให้อาหารเพิ่ม XX กรัม
-            </button>
+            </motion.button>
           </div>
 
           <p className="text-center text-sm text-gray-700">
@@ -58,6 +71,7 @@ const FeederDetailPage: React.FC = () => {
         </div>
       </div>
     </div>
+    </motion.div>
   );
 };
 
