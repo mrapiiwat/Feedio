@@ -28,4 +28,15 @@ module.exports = {
   },
   plugins: [],
 }
+module.exports = {
+  content: ["./src/**/*.{js,ts,jsx,tsx}"],
+  theme: {
+    extend: {
+      fontFamily: {
+        prompt: ["Prompt", "sans-serif"],
+      },
+    },
+  },
+  plugins: [],
+};
 
