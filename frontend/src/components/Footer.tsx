@@ -18,7 +18,7 @@ const Footer: React.FC = () => {
           <h3 className="font-bold text-lg mb-3">รู้จักกับเรา</h3>
           <ul className="space-y-1">
             <li><Link to="/about">เกี่ยวกับเรา</Link></li>
-            <li><a href="https://github.com" target="_blank" className="hover:underline">GitHub</a></li>
+            <li><a href="https://github.com/mrapiiwat/Feedio" target="_blank" className="hover:underline">GitHub</a></li>
           </ul>
         </div>
       </div>

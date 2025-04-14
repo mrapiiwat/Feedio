@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 
 const StatisticsPage: React.FC = () => {
   const [week, setWeek] = useState("ทั้งหมด");
@@ -41,6 +42,15 @@ const StatisticsPage: React.FC = () => {
   });
 
   return (
+
+    <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4 }}
+          className="px-4 py-8"
+        >
+          
     <div className="p-6">
       {/* Dropdown filter */}
       <div className="flex justify-center gap-4 mb-6">
@@ -98,6 +108,7 @@ const StatisticsPage: React.FC = () => {
         </tbody>
       </table>
     </div>
+    </motion.div>
   );
 };
 

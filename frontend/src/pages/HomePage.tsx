@@ -5,22 +5,38 @@ import dogImage from "../assets/dog.png";
 import TotolFoodImage from "../assets/อาหารทั้งหมด.png";
 import RemainingFoodImage from "../assets/อาหารเหลือ.png";
 import IconFood from "../assets/iconfood.png";
+import { motion } from "framer-motion";
 
 const HomePage: React.FC = () => {
   return (
+    <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4 }}
+          className="px-4 py-8"
+        >
     <div className="bg-[#F9F3E3] min-h-screen">
       <main className="p-6">
-        {/* ส่วนที่ 1: ข้อความหัว */}
-        <h1 className="text-3xl font-bold text-center text-brown-800 font-kanit">
-          ให้ Feedio ดูแลน้องหมาของคุณ 🐶
-        </h1>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          {/* ส่วนที่ 1: ข้อความหัว */}
+          <h1 className="text-3xl font-bold text-center text-brown-800 font-kanit">
+            ให้ Feedio ดูแลน้องหมาของคุณ 🐶
+          </h1>
+        </motion.div>
 
         {/* ส่วนที่ 2: รูปภาพน้องหมา */}
         <div className="flex justify-center my-4">
-          <img
+          <motion.img
             src={dogImage}
             alt="น้องหมาน่ารัก"
             className="rounded-xl shadow-lg mx-auto mt-6"
+            animate={{ y: [0, -4, 0] }}
+            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
             style={{ width: "400px", height: "300px" }} // กำหนดขนาดของรูปภาพ
           />
         </div>
@@ -45,7 +61,9 @@ const HomePage: React.FC = () => {
           </p>
           <div className="text-5xl font-bold text-[#E94F1D]">000.0 กรัม</div>
         </div>
-        <p className="text-sm text-[#4D2C1D] mt-4 text-center">ปริมาณอาหารคงเหลือ ณ เวลา xx.xx น.</p>
+        <p className="text-sm text-[#4D2C1D] mt-4 text-center">
+          ปริมาณอาหารคงเหลือ ณ เวลา xx.xx น.
+        </p>
 
         {/* ส่วนที่ 5: สรุปสัปดาห์ */}
         <div className="mt-10 ">
@@ -82,6 +100,7 @@ const HomePage: React.FC = () => {
         </div>
       </main>
     </div>
+    </motion.div>
   );
 };
 

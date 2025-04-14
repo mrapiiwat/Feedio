@@ -6,11 +6,14 @@ import AboutPage from "./pages/AboutPage";
 import BlogPage from "./pages/BlogPage";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   return (
     <div className="flex flex-col min-h-screen bg-cream">
       <Navbar />
+
+      <ScrollToTop />
 
       <main className="flex-1 p-4">
         <Routes>
@@ -21,7 +24,6 @@ function App() {
           <Route path="/blog" element={<BlogPage />} />
         </Routes>
       </main>
-
       <Footer />
     </div>
   );

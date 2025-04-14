@@ -6,6 +6,7 @@ import member2 from "../assets/members/member2.png";
 import member3 from "../assets/members/member3.png";
 import member4 from "../assets/members/member4.png";
 import member5 from "../assets/members/member5.png";
+import { motion } from "framer-motion";
 
 const AboutPage: React.FC = () => {
   const team = [
@@ -37,6 +38,15 @@ const AboutPage: React.FC = () => {
   ];
 
   return (
+
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.4 }}
+      className="px-4 py-8"
+    >
+
     <div className="px-4 py-12 max-w-5xl mx-auto text-center text-[#4D2C1D]">
       {/* โลโก้ Feedio */}
       <img
@@ -72,6 +82,7 @@ const AboutPage: React.FC = () => {
         ))}
       </div>
     </div>
+    </motion.div>
   );
 };
 
