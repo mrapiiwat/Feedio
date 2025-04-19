@@ -1,115 +1,134 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
+import React, { useEffect, useState } from "react";
 
 const StatisticsPage: React.FC = () => {
-  const [week, setWeek] = useState("ทั้งหมด");
-  const [month, setMonth] = useState("มกราคม");
-  const [year, setYear] = useState("2568");
+  const [historyData, setHistoryData] = useState<any[]>([]);
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
+  const [selectedWeek, setSelectedWeek] = useState<number>(getWeekOfMonth(new Date()));
+  const [totalGiven, setTotalGiven] = useState<number>(0);
+  const [totalRemaining, setTotalRemaining] = useState<number>(0);
+  const [dailyStats, setDailyStats] = useState<Record<string, { given: number; left: number }>>({});
 
-  const dummyData = [
-    {
-      week: "1",
-      month: "มกราคม",
-      year: "2568",
-      range: "1 ม.ค. 2568 - 7 ม.ค. 2568"
-    },
-    {
-      week: "2",
-      month: "มกราคม",
-      year: "2568",
-      range: "8 ม.ค. 2568 - 14 ม.ค. 2568"
-    },
-    {
-      week: "3",
-      month: "มกราคม",
-      year: "2568",
-      range: "15 ม.ค. 2568 - 21 ม.ค. 2568"
-    },
-    {
-      week: "4",
-      month: "มกราคม",
-      year: "2568",
-      range: "22 ม.ค. 2568 - 31 ม.ค. 2568"
-    }
-  ];
+  useEffect(() => {
+    fetch("https://feedio.loca.lt/api/history")
+      .then((res) => res.json())
+      .then((data) => setHistoryData(data))
+      .catch((err) => console.error("Error fetching history:", err));
+  }, []);
 
-  const filteredData = dummyData.filter((item) => {
-    return (
-      (week === "ทั้งหมด" || item.week === week[0]) && // week[0] = "1" จาก "1 (วันที่ 1 - 7)"
-      item.month === month &&
-      item.year === year
-    );
-  });
+  useEffect(() => {
+    const filtered = historyData.filter((item) => {
+      const date = new Date(item.date);
+      const isSameYear = date.getFullYear() === selectedYear;
+      const isSameMonth = date.getMonth() + 1 === selectedMonth;
+      const isSameWeek = getWeekOfMonth(date) === selectedWeek;
+      return isSameYear && isSameMonth && isSameWeek;
+    });
+
+    const totalGivenAmount = filtered.reduce((sum, item) => sum + (item.given_amount || 0), 0);
+    const totalRemainingAmount = filtered.reduce((sum, item) => sum + (item.remaining_amount || 0), 0);
+
+    setTotalGiven(totalGivenAmount);
+    setTotalRemaining(totalRemainingAmount);
+
+    // 👇 สร้างข้อมูลรายวัน
+    const grouped: Record<string, { given: number; left: number }> = {};
+    filtered.forEach((item) => {
+      const dateKey = new Date(item.date).toLocaleDateString("th-TH", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+      });
+
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = { given: 0, left: 0 };
+      }
+      grouped[dateKey].given += item.given_amount || 0;
+      grouped[dateKey].left += item.remaining_amount || 0;
+    });
+
+    setDailyStats(grouped);
+  }, [historyData, selectedYear, selectedMonth, selectedWeek]);
 
   return (
+    <div className="min-h-screen bg-[#FFF9F0] px-6 py-8">
+      <h1 className="text-3xl font-bold text-center text-[#4D2C1D] mb-6">📊 สถิติการให้อาหาร</h1>
 
-    <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.4 }}
-          className="px-4 py-8"
-        >
-          
-    <div className="p-6">
       {/* Dropdown filter */}
-      <div className="flex justify-center gap-4 mb-6">
-        <select
-          value={week}
-          onChange={(e) => setWeek(e.target.value)}
-          className="p-2 border rounded"
-        >
-          <option value="ทั้งหมด">ทั้งหมด</option>
-          <option value="1 (วันที่ 1 - 7)">1 (วันที่ 1 - 7)</option>
-          <option value="2 (วันที่ 8 - 14)">2 (วันที่ 8 - 14)</option>
-          <option value="3 (วันที่ 15 - 21)">3 (วันที่ 15 - 21)</option>
-          <option value="4 (วันที่ 22 - 31)">4 (วันที่ 22 - 31)</option>
+      <div className="flex flex-wrap justify-center gap-4 mb-8">
+        <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))} className="p-2 border rounded">
+          {Array.from({ length: 5 }, (_, i) => {
+            const year = new Date().getFullYear() - i;
+            return <option key={year} value={year}>ปี {year}</option>;
+          })}
         </select>
 
-        <select
-          value={month}
-          onChange={(e) => setMonth(e.target.value)}
-          className="p-2 border rounded"
-        >
-          {[
-            "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
-            "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
-          ].map((m) => (
-            <option key={m} value={m}>{m}</option>
+        <select value={selectedMonth} onChange={(e) => setSelectedMonth(Number(e.target.value))} className="p-2 border rounded">
+          {Array.from({ length: 12 }, (_, i) => (
+            <option key={i + 1} value={i + 1}>เดือน {i + 1}</option>
           ))}
         </select>
 
-        <select
-          value={year}
-          onChange={(e) => setYear(e.target.value)}
-          className="p-2 border rounded"
-        >
-          <option value="2567">2567</option>
-          <option value="2568">2568</option>
-          <option value="2569">2569</option>
+        <select value={selectedWeek} onChange={(e) => setSelectedWeek(Number(e.target.value))} className="p-2 border rounded">
+          {[1, 2, 3, 4, 5].map((w) => (
+            <option key={w} value={w}>สัปดาห์ที่ {w}</option>
+          ))}
         </select>
       </div>
 
-      {/* Table */}
-      <table className="mx-auto w-[80%] text-center bg-[#ded1c6] rounded">
-        <thead>
-          <tr>
-            <th className="p-4">อาทิตย์ที่</th>
-            <th className="p-4">ระหว่างวันที่</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredData.map((item, index) => (
-            <tr key={index} className="bg-[#d8cabe]">
-              <td className="p-4">{item.week}</td>
-              <td className="p-4">{item.range}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* Summary */}
+      <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-6 text-center space-y-4">
+        <div>
+          <h2 className="text-xl font-semibold text-[#4D2C1D]">🍽 ปริมาณที่ให้อาหาร</h2>
+          <p className="text-3xl text-[#E94F1D] font-bold">{totalGiven.toFixed(1)} กรัม</p>
+        </div>
+        <div>
+          <h2 className="text-xl font-semibold text-[#4D2C1D]">🥣 ปริมาณที่เหลือ</h2>
+          <p className="text-3xl text-[#E94F1D] font-bold">{totalRemaining.toFixed(1)} กรัม</p>
+        </div>
+      </div>
+
+      {/* ตารางรายวัน */}
+      <div className="max-w-3xl mx-auto mt-10">
+        <h2 className="text-xl font-bold mb-4 text-center text-[#4D2C1D]">
+          รายละเอียดรายวันในสัปดาห์ที่ {selectedWeek}
+        </h2>
+
+        {Object.keys(dailyStats).length > 0 ? (
+          <table className="w-full bg-white rounded-xl shadow-md">
+            <thead className="bg-[#F9F3E3] text-[#4D2C1D]">
+              <tr>
+                <th className="py-2 px-4 text-left">📅 วันที่</th>
+                <th className="py-2 px-4 text-right">🍽 ให้ไปแล้ว (g)</th>
+                <th className="py-2 px-4 text-right">🥣 เหลือ (g)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(dailyStats).map(([date, stat]) => (
+                <tr key={date} className="border-b">
+                  <td className="py-2 px-4">{date}</td>
+                  <td className="py-2 px-4 text-right text-green-700 font-semibold">
+                    {stat.given.toFixed(1)}
+                  </td>
+                  <td className="py-2 px-4 text-right text-orange-700 font-semibold">
+                    {stat.left.toFixed(1)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p className="text-center text-gray-500">ยังไม่มีข้อมูลในสัปดาห์นี้</p>
+        )}
+      </div>
     </div>
-    </motion.div>
   );
 };
+
+// 🔹 Helper function: คำนวณว่าสัปดาห์ที่เท่าไหร่ในเดือน
+function getWeekOfMonth(date: Date): number {
+  const firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay(); // 0=Sun
+  return Math.ceil((date.getDate() + firstDay) / 7);
+}
 
 export default StatisticsPage;
