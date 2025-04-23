@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { API_BASE_URL } from "../utils/api";
 
 const BlogPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -32,7 +33,7 @@ const BlogPage: React.FC = () => {
     setAiResult(null);
 
     try {
-      const res = await fetch("https://feedio.loca.lt/api/dog", {
+      const res = await fetch(`${API_BASE_URL}/dog`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -41,7 +42,7 @@ const BlogPage: React.FC = () => {
       const data = await res.json();
 
       if (data?.dog?.id) {
-        const res2 = await fetch(`https://feedio.loca.lt/api/dog/${data.dog.id}`);
+        const res2 = await fetch(`${API_BASE_URL}/dog/${data.dog.id}`);
         const result = await res2.json();
 
         if (result?.dog?.AIRecommendations) {

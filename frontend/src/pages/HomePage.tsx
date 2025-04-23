@@ -4,6 +4,8 @@ import TotolFoodImage from "../assets/อาหารทั้งหมด.png";
 import RemainingFoodImage from "../assets/อาหารเหลือ.png";
 import IconFood from "../assets/iconfood.png";
 import { motion } from "framer-motion";
+import { API_BASE_URL } from "../utils/api";
+
 
 const HomePage: React.FC = () => {
   const [currentFood, setCurrentFood] = useState<number | null>(null);
@@ -17,13 +19,15 @@ const HomePage: React.FC = () => {
   const loadFeederAndHistory = async () => {
     try {
       // Feeder
-      const feederRes = await fetch("https://feedio.loca.lt/api/feeder/1");
+      const feederRes = await fetch(`${API_BASE_URL}/feeder/1`);
+      if (!feederRes.ok) throw new Error("ไม่สามารถโหลดข้อมูลฟีดเดอร์ได้");
       const feederData = await feederRes.json();
       setCurrentFood(feederData.current_food);
       setFoodCapacity(feederData.food_capacity);
 
       // History
-      const historyRes = await fetch("https://feedio.loca.lt/api/history");
+      const historyRes = await fetch(`${API_BASE_URL}/history`);
+      if (!historyRes.ok) throw new Error("ไม่สามารถโหลดประวัติการให้อาหารได้");
       const historyData = await historyRes.json();
 
       const thisWeek = historyData.filter((item: any) => {
@@ -52,7 +56,7 @@ const HomePage: React.FC = () => {
   const handleFeed = async () => {
     setFeeding(true);
     try {
-      const res = await fetch("https://feedio.loca.lt/api/history", {
+      const res = await fetch('${API_BASE_URL}/history', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ feeder_id: 1 }),

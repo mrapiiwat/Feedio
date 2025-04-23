@@ -56,11 +56,6 @@ const Navbar: React.FC = () => {
             </NavLink>
           </li>
         </ul>
-
-        {/* ปุ่ม Login */}
-        <button className="bg-[#4D2C1D] text-white px-3 py-1.5 rounded-full font-semibold">
-          เข้าสู่ระบบ
-        </button>
       </nav>
     </div>
   );
