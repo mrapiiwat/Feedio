@@ -1,134 +1,149 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { motion } from "framer-motion";
 
 const StatisticsPage: React.FC = () => {
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const [historyData, setHistoryData] = useState<any[]>([]);
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
-  const [selectedWeek, setSelectedWeek] = useState<number>(getWeekOfMonth(new Date()));
-  const [totalGiven, setTotalGiven] = useState<number>(0);
-  const [totalRemaining, setTotalRemaining] = useState<number>(0);
-  const [dailyStats, setDailyStats] = useState<Record<string, { given: number; left: number }>>({});
+  const [filteredData, setFilteredData] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch("https://feedio.loca.lt/api/history")
+    fetch(`${import.meta.env.VITE_API_URL}/api/history`)
       .then((res) => res.json())
-      .then((data) => setHistoryData(data))
+      .then((data) => {
+        setHistoryData(data);
+      })
       .catch((err) => console.error("Error fetching history:", err));
   }, []);
 
   useEffect(() => {
-    const filtered = historyData.filter((item) => {
-      const date = new Date(item.date);
-      const isSameYear = date.getFullYear() === selectedYear;
-      const isSameMonth = date.getMonth() + 1 === selectedMonth;
-      const isSameWeek = getWeekOfMonth(date) === selectedWeek;
-      return isSameYear && isSameMonth && isSameWeek;
-    });
-
-    const totalGivenAmount = filtered.reduce((sum, item) => sum + (item.given_amount || 0), 0);
-    const totalRemainingAmount = filtered.reduce((sum, item) => sum + (item.remaining_amount || 0), 0);
-
-    setTotalGiven(totalGivenAmount);
-    setTotalRemaining(totalRemainingAmount);
-
-    // 👇 สร้างข้อมูลรายวัน
-    const grouped: Record<string, { given: number; left: number }> = {};
-    filtered.forEach((item) => {
-      const dateKey = new Date(item.date).toLocaleDateString("th-TH", {
-        weekday: "short",
-        day: "numeric",
-        month: "short",
+    if (startDate && endDate) {
+      const filtered = historyData.filter((item: any) => {
+        const itemDate = new Date(item.timestamp);
+        return itemDate >= startDate && itemDate <= endDate;
       });
+      setFilteredData(filtered);
+    } else {
+      setFilteredData([]);
+    }
+  }, [startDate, endDate, historyData]);
 
-      if (!grouped[dateKey]) {
-        grouped[dateKey] = { given: 0, left: 0 };
-      }
-      grouped[dateKey].given += item.given_amount || 0;
-      grouped[dateKey].left += item.remaining_amount || 0;
-    });
+  const totalEaten = filteredData
+    .filter((item: any) => item.type === "eaten")
+    .reduce((sum: number, item: any) => sum + (item.amount || 0), 0);
 
-    setDailyStats(grouped);
-  }, [historyData, selectedYear, selectedMonth, selectedWeek]);
+  const totalLeft = filteredData
+    .filter((item: any) => item.type === "left")
+    .reduce((sum: number, item: any) => sum + (item.amount || 0), 0);
 
   return (
-    <div className="min-h-screen bg-[#FFF9F0] px-6 py-8">
-      <h1 className="text-3xl font-bold text-center text-[#4D2C1D] mb-6">📊 สถิติการให้อาหาร</h1>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="min-h-screen bg-[#F9F3E3] p-6"
+    >
+      <div className="bg-white p-6 rounded-lg shadow-lg max-w-4xl mx-auto">
+        {/* 📅 Date Picker */}
+        <h1 className="text-2xl font-bold text-center mb-6 text-[#4D2C1D]">
+          📅 เลือกช่วงวันที่
+        </h1>
+        <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-8">
+          <DatePicker
+            selected={startDate || undefined}
+            onChange={(date) => setStartDate(date)}
+            startDate={startDate || undefined}
+            endDate={endDate || undefined}
+            dateFormat="dd/MM/yyyy"
+            placeholderText="เลือกวันที่เริ่มต้น"
+            className="border rounded-lg p-2 text-center"
+          />
 
-      {/* Dropdown filter */}
-      <div className="flex flex-wrap justify-center gap-4 mb-8">
-        <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))} className="p-2 border rounded">
-          {Array.from({ length: 5 }, (_, i) => {
-            const year = new Date().getFullYear() - i;
-            return <option key={year} value={year}>ปี {year}</option>;
-          })}
-        </select>
+          <span className="mx-2">ถึง</span>
 
-        <select value={selectedMonth} onChange={(e) => setSelectedMonth(Number(e.target.value))} className="p-2 border rounded">
-          {Array.from({ length: 12 }, (_, i) => (
-            <option key={i + 1} value={i + 1}>เดือน {i + 1}</option>
-          ))}
-        </select>
-
-        <select value={selectedWeek} onChange={(e) => setSelectedWeek(Number(e.target.value))} className="p-2 border rounded">
-          {[1, 2, 3, 4, 5].map((w) => (
-            <option key={w} value={w}>สัปดาห์ที่ {w}</option>
-          ))}
-        </select>
-      </div>
-
-      {/* Summary */}
-      <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-6 text-center space-y-4">
-        <div>
-          <h2 className="text-xl font-semibold text-[#4D2C1D]">🍽 ปริมาณที่ให้อาหาร</h2>
-          <p className="text-3xl text-[#E94F1D] font-bold">{totalGiven.toFixed(1)} กรัม</p>
+          <DatePicker
+            selected={endDate || undefined}
+            onChange={(date) => setEndDate(date)}
+            startDate={startDate || undefined}
+            endDate={endDate || undefined}
+            minDate={startDate || undefined}
+            dateFormat="dd/MM/yyyy"
+            placeholderText="เลือกวันที่สิ้นสุด"
+            className="border rounded-lg p-2 text-center"
+          />
         </div>
-        <div>
-          <h2 className="text-xl font-semibold text-[#4D2C1D]">🥣 ปริมาณที่เหลือ</h2>
-          <p className="text-3xl text-[#E94F1D] font-bold">{totalRemaining.toFixed(1)} กรัม</p>
-        </div>
-      </div>
 
-      {/* ตารางรายวัน */}
-      <div className="max-w-3xl mx-auto mt-10">
-        <h2 className="text-xl font-bold mb-4 text-center text-[#4D2C1D]">
-          รายละเอียดรายวันในสัปดาห์ที่ {selectedWeek}
-        </h2>
+        {/* 🥘 Summary */}
+        {startDate && endDate && (
+          <div className="bg-[#FFF5E4] p-6 rounded-lg mb-8 text-center shadow">
+            <h2 className="text-xl font-semibold mb-4 text-[#4D2C1D]">
+              🥘 สรุปผลรวม (ช่วงวันที่เลือก)
+            </h2>
+            <div className="text-lg text-[#4D2C1D] mb-2">
+              🍚 ปริมาณที่ให้อาหารทั้งหมด:{" "}
+              <span className="text-[#E94F1D] font-bold">
+                {totalEaten.toFixed(1)} กรัม
+              </span>
+            </div>
+            <div className="text-lg text-[#4D2C1D]">
+              🥣 ปริมาณอาหารที่เหลือทั้งหมด:{" "}
+              <span className="text-[#E94F1D] font-bold">
+                {totalLeft.toFixed(1)} กรัม
+              </span>
+            </div>
+          </div>
+        )}
 
-        {Object.keys(dailyStats).length > 0 ? (
-          <table className="w-full bg-white rounded-xl shadow-md">
-            <thead className="bg-[#F9F3E3] text-[#4D2C1D]">
-              <tr>
-                <th className="py-2 px-4 text-left">📅 วันที่</th>
-                <th className="py-2 px-4 text-right">🍽 ให้ไปแล้ว (g)</th>
-                <th className="py-2 px-4 text-right">🥣 เหลือ (g)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(dailyStats).map(([date, stat]) => (
-                <tr key={date} className="border-b">
-                  <td className="py-2 px-4">{date}</td>
-                  <td className="py-2 px-4 text-right text-green-700 font-semibold">
-                    {stat.given.toFixed(1)}
-                  </td>
-                  <td className="py-2 px-4 text-right text-orange-700 font-semibold">
-                    {stat.left.toFixed(1)}
-                  </td>
+        {/* 📅 Daily Table */}
+        {startDate && endDate && (
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white border rounded-lg">
+              <thead className="bg-[#FFD580] text-[#4D2C1D]">
+                <tr>
+                  <th className="py-3 px-4 border-b">📅 วันที่</th>
+                  <th className="py-3 px-4 border-b">🍚 ให้อาหาร (g)</th>
+                  <th className="py-3 px-4 border-b">🥣 เหลือ (g)</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p className="text-center text-gray-500">ยังไม่มีข้อมูลในสัปดาห์นี้</p>
+              </thead>
+              <tbody>
+                {filteredData.length > 0 ? (
+                  filteredData.map((item: any, index: number) => (
+                    <tr key={index} className="text-center">
+                      <td className="py-3 px-4 border-b">
+                        {new Date(item.timestamp).toLocaleDateString("th-TH", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </td>
+                      <td className="py-3 px-4 border-b text-[#E94F1D]">
+                        {item.type === "eaten"
+                          ? `${item.amount.toFixed(1)} กรัม`
+                          : "-"}
+                      </td>
+                      <td className="py-3 px-4 border-b text-[#E94F1D]">
+                        {item.type === "left"
+                          ? `${item.amount.toFixed(1)} กรัม`
+                          : "-"}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={3} className="text-center py-6 text-[#4D2C1D]">
+                      ไม่มีข้อมูลในช่วงวันที่เลือก
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
-
-// 🔹 Helper function: คำนวณว่าสัปดาห์ที่เท่าไหร่ในเดือน
-function getWeekOfMonth(date: Date): number {
-  const firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay(); // 0=Sun
-  return Math.ceil((date.getDate() + firstDay) / 7);
-}
 
 export default StatisticsPage;
