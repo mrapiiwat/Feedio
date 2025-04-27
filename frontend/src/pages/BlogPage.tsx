@@ -72,7 +72,7 @@ const BlogPage: React.FC = () => {
     >
       <div className="max-w-xl mx-auto bg-[#fff0c2] p-6 rounded-xl shadow-lg">
         <h1 className="text-2xl font-bold mb-4 text-center text-brown-800">
-          🐶 AI ผู้ช่วยคำนวณอาหารสำหรับน้องหมา
+        🤖 AI ผู้ช่วยคำนวณอาหารสำหรับน้องหมา
         </h1>
 
         {error && (
