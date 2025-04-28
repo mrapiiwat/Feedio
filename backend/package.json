@@ -6,7 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start:dev": "nodemon --ext ts --exec ts-node src/main.ts",
     "start": "node dist/main.js",
-    "start:tunnel": "npx localtunnel --port 5000"
+    "start:tunnel": "npx localtunnel --port 5000 --subdomain feedio"
   },
   "keywords": [],
   "author": "",
