@@ -17,7 +17,11 @@ import weightSensorRoutes from "./routes/wrightSensor.route";
 import historyRoutes from "./routes/history.route";
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5173",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
 dotenv.config();
 setupSwagger(app); // Initialize Swagger documentation
 app.use(morgan("dev"));

@@ -184,3 +184,29 @@ export const getRecommendationByDogId = async (req: Request, res: Response) => {
     }
   }
 };
+
+export const getRecommendationByDogid = async (req: Request, res: Response) => {
+  try {
+    const dogId = req.params.id;
+    const recommendation = await recomService.getRecommendationByDogId(dogId);
+    if (!recommendation) {
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Recommendation not found" });
+    }
+    res.status(StatusCodes.OK).json({
+      message: `Recommendation with ID: ${dogId}`,
+      recommendation,
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: error.message,
+      });
+    } else {
+      res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: "Unknown error occurred" });
+    }
+  }
+};
