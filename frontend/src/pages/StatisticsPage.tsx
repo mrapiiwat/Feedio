@@ -1,113 +1,147 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { motion } from "framer-motion";
 
 const StatisticsPage: React.FC = () => {
-  const [week, setWeek] = useState("ทั้งหมด");
-  const [month, setMonth] = useState("มกราคม");
-  const [year, setYear] = useState("2568");
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [historyData, setHistoryData] = useState<any[]>([]);
+  const [filteredData, setFilteredData] = useState<any[]>([]);
 
-  const dummyData = [
-    {
-      week: "1",
-      month: "มกราคม",
-      year: "2568",
-      range: "1 ม.ค. 2568 - 7 ม.ค. 2568"
-    },
-    {
-      week: "2",
-      month: "มกราคม",
-      year: "2568",
-      range: "8 ม.ค. 2568 - 14 ม.ค. 2568"
-    },
-    {
-      week: "3",
-      month: "มกราคม",
-      year: "2568",
-      range: "15 ม.ค. 2568 - 21 ม.ค. 2568"
-    },
-    {
-      week: "4",
-      month: "มกราคม",
-      year: "2568",
-      range: "22 ม.ค. 2568 - 31 ม.ค. 2568"
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL}/api/history`)
+      .then((res) => res.json())
+      .then((data) => {
+        setHistoryData(data);
+      })
+      .catch((err) => console.error("Error fetching history:", err));
+  }, []);
+
+  useEffect(() => {
+    if (startDate && endDate) {
+      const filtered = historyData.filter((item: any) => {
+        const itemDate = new Date(item.timestamp);
+        return itemDate >= startDate && itemDate <= endDate;
+      });
+      setFilteredData(filtered);
+    } else {
+      setFilteredData([]);
     }
-  ];
+  }, [startDate, endDate, historyData]);
 
-  const filteredData = dummyData.filter((item) => {
-    return (
-      (week === "ทั้งหมด" || item.week === week[0]) && // week[0] = "1" จาก "1 (วันที่ 1 - 7)"
-      item.month === month &&
-      item.year === year
-    );
-  });
+  const totalEaten = filteredData
+    .filter((item: any) => item.type === "eaten")
+    .reduce((sum: number, item: any) => sum + (item.amount || 0), 0);
+
+  const totalLeft = filteredData
+    .filter((item: any) => item.type === "left")
+    .reduce((sum: number, item: any) => sum + (item.amount || 0), 0);
 
   return (
-
     <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.4 }}
-          className="px-4 py-8"
-        >
-          
-    <div className="p-6">
-      {/* Dropdown filter */}
-      <div className="flex justify-center gap-4 mb-6">
-        <select
-          value={week}
-          onChange={(e) => setWeek(e.target.value)}
-          className="p-2 border rounded"
-        >
-          <option value="ทั้งหมด">ทั้งหมด</option>
-          <option value="1 (วันที่ 1 - 7)">1 (วันที่ 1 - 7)</option>
-          <option value="2 (วันที่ 8 - 14)">2 (วันที่ 8 - 14)</option>
-          <option value="3 (วันที่ 15 - 21)">3 (วันที่ 15 - 21)</option>
-          <option value="4 (วันที่ 22 - 31)">4 (วันที่ 22 - 31)</option>
-        </select>
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="min-h-screen bg-[#F9F3E3] p-6"
+    >
+      <div className="bg-white p-6 rounded-lg shadow-lg max-w-4xl mx-auto">
+        {/* 📅 Date Picker */}
+        <h1 className="text-2xl font-bold text-center mb-6 text-[#4D2C1D]">
+          📅 เลือกช่วงวันที่
+        </h1>
+        <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-8">
+          <DatePicker
+            selected={startDate || undefined}
+            onChange={(date) => setStartDate(date)}
+            startDate={startDate || undefined}
+            endDate={endDate || undefined}
+            dateFormat="dd/MM/yyyy"
+            placeholderText="เลือกวันที่เริ่มต้น"
+            className="border rounded-lg p-2 text-center"
+          />
 
-        <select
-          value={month}
-          onChange={(e) => setMonth(e.target.value)}
-          className="p-2 border rounded"
-        >
-          {[
-            "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
-            "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
-          ].map((m) => (
-            <option key={m} value={m}>{m}</option>
-          ))}
-        </select>
+          <span className="mx-2">ถึง</span>
 
-        <select
-          value={year}
-          onChange={(e) => setYear(e.target.value)}
-          className="p-2 border rounded"
-        >
-          <option value="2567">2567</option>
-          <option value="2568">2568</option>
-          <option value="2569">2569</option>
-        </select>
+          <DatePicker
+            selected={endDate || undefined}
+            onChange={(date) => setEndDate(date)}
+            startDate={startDate || undefined}
+            endDate={endDate || undefined}
+            minDate={startDate || undefined}
+            dateFormat="dd/MM/yyyy"
+            placeholderText="เลือกวันที่สิ้นสุด"
+            className="border rounded-lg p-2 text-center"
+          />
+        </div>
+
+        {/* 🥘 Summary */}
+        {startDate && endDate && (
+          <div className="bg-[#FFF5E4] p-6 rounded-lg mb-8 text-center shadow">
+            <h2 className="text-xl font-semibold mb-4 text-[#4D2C1D]">
+              🥘 สรุปผลรวม (ช่วงวันที่เลือก)
+            </h2>
+            <div className="text-lg text-[#4D2C1D] mb-2">
+              🍚 ปริมาณที่ให้อาหารทั้งหมด:{" "}
+              <span className="text-[#E94F1D] font-bold">
+                {totalEaten.toFixed(1)} กรัม
+              </span>
+            </div>
+            <div className="text-lg text-[#4D2C1D]">
+              🥣 ปริมาณอาหารที่เหลือทั้งหมด:{" "}
+              <span className="text-[#E94F1D] font-bold">
+                {totalLeft.toFixed(1)} กรัม
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* 📅 Daily Table */}
+        {startDate && endDate && (
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white border rounded-lg">
+              <thead className="bg-[#FFD580] text-[#4D2C1D]">
+                <tr>
+                  <th className="py-3 px-4 border-b">📅 วันที่</th>
+                  <th className="py-3 px-4 border-b">🍚 ให้อาหาร (g)</th>
+                  <th className="py-3 px-4 border-b">🥣 เหลือ (g)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredData.length > 0 ? (
+                  filteredData.map((item: any, index: number) => (
+                    <tr key={index} className="text-center">
+                      <td className="py-3 px-4 border-b">
+                        {new Date(item.timestamp).toLocaleDateString("th-TH", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </td>
+                      <td className="py-3 px-4 border-b text-[#E94F1D]">
+                        {item.type === "eaten"
+                          ? `${item.amount.toFixed(1)} กรัม`
+                          : "-"}
+                      </td>
+                      <td className="py-3 px-4 border-b text-[#E94F1D]">
+                        {item.type === "left"
+                          ? `${item.amount.toFixed(1)} กรัม`
+                          : "-"}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={3} className="text-center py-6 text-[#4D2C1D]">
+                      ไม่มีข้อมูลในช่วงวันที่เลือก
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-
-      {/* Table */}
-      <table className="mx-auto w-[80%] text-center bg-[#ded1c6] rounded">
-        <thead>
-          <tr>
-            <th className="p-4">อาทิตย์ที่</th>
-            <th className="p-4">ระหว่างวันที่</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredData.map((item, index) => (
-            <tr key={index} className="bg-[#d8cabe]">
-              <td className="p-4">{item.week}</td>
-              <td className="p-4">{item.range}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
     </motion.div>
   );
 };

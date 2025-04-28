@@ -1,23 +1,9 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-
-interface DogForm {
-  name: string;
-  breed: string;
-  weight: string;
-  age: string;
-  disease: string;
-  sex: string;
-}
-
-interface Recommendation {
-  breakfast: string;
-  lunch: string;
-  dinner: string;
-}
+import { API_BASE_URL } from "../utils/api";
 
 const BlogPage: React.FC = () => {
-  const [formData, setFormData] = useState<DogForm>({
+  const [formData, setFormData] = useState({
     name: "",
     breed: "",
     weight: "",
@@ -26,147 +12,174 @@ const BlogPage: React.FC = () => {
     sex: "",
   });
 
-  const [aiResult, setAiResult] = useState<Recommendation | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [aiResult, setAiResult] = useState<{
+    breakfast?: string;
+    lunch?: string;
+    dinner?: string;
+  } | null>(null);
+
+  const [error, setError] = useState("");
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setError("");
     setAiResult(null);
 
     try {
-      const response = await fetch("https://feedio.loca.lt/api/dog", {
+      const res = await fetch(`${API_BASE_URL}/dog`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
-      const created = await response.json();
-      const id = created?.dog?.Dog_ID;
-      if (!id) throw new Error("ไม่พบ ID ที่ได้จาก backend");
-
-      const res = await fetch(`https://feedio.loca.lt/api/dog/${id}`);
       const data = await res.json();
-      const { dog, recommendation } = data;
 
-      setFormData({
-        name: dog.name,
-        breed: dog.breed,
-        weight: dog.weight.toString(),
-        age: dog.age.toString(),
-        disease: dog.disease,
-        sex: dog.sex,
-      });
+      if (data?.dog?.id) {
+        const res2 = await fetch(`${API_BASE_URL}/dog/${data.dog.id}`);
+        const result = await res2.json();
 
-      setAiResult({
-        breakfast: recommendation?.Recommended_Breakfast + " กรัม",
-        lunch: recommendation?.Recommended_Lunch + " กรัม",
-        dinner: recommendation?.Recommended_Dinner + " กรัม",
-      });
-    } catch (err: any) {
-      setError(err.message || "เกิดข้อผิดพลาดในการเชื่อมต่อ AI");
+        if (result?.dog?.AIRecommendations) {
+          setAiResult({
+            breakfast: result.dog.AIRecommendations.Recommended_Breakfast,
+            lunch: result.dog.AIRecommendations.Recommended_Lunch,
+            dinner: result.dog.AIRecommendations.Recommended_Dinner,
+          });
+        } else {
+          setError("ไม่พบผลลัพธ์จาก AI");
+        }
+      } else {
+        setError("ไม่พบ ID ที่ได้จาก backend");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("เกิดข้อผิดพลาดในการเชื่อมต่อ AI");
     }
   };
 
   return (
     <motion.div
-      className="min-h-screen bg-[#FDF6E9] flex flex-col items-center px-4 py-10"
+      className="min-h-screen bg-[#fff8ed] px-4 py-10"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.4 }}
     >
-      <h1 className="text-3xl md:text-4xl font-bold text-center text-[#4D2C1D] mb-4">
-        🐶 AI ผู้ช่วยคำนวณอาหารสำหรับน้องหมา
-      </h1>
-      {error && (
-        <p className="text-red-500 text-center font-medium mb-4">{error}</p>
-      )}
-      <form
-        onSubmit={handleSubmit}
-        className="bg-[#FFF0C7] p-6 rounded-xl w-full max-w-md shadow-md"
-      >
-        <label className="block mb-2 font-semibold">ชื่อ</label>
-        <input
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          className="w-full p-2 rounded border mb-4"
-        />
+      <div className="max-w-xl mx-auto bg-[#fff0c2] p-6 rounded-xl shadow-lg">
+        <h1 className="text-2xl font-bold mb-4 text-center text-brown-800">
+        🤖 AI ผู้ช่วยคำนวณอาหารสำหรับน้องหมา
+        </h1>
 
-        <label className="block mb-2 font-semibold">สายพันธุ์</label>
-        <input
-          name="breed"
-          value={formData.breed}
-          onChange={handleChange}
-          className="w-full p-2 rounded border mb-4"
-        />
+        {error && (
+          <p className="text-red-500 text-center font-medium mb-4">{error}</p>
+        )}
 
-        <label className="block mb-2 font-semibold">น้ำหนัก (กก.)</label>
-        <input
-          name="weight"
-          value={formData.weight}
-          onChange={handleChange}
-          className="w-full p-2 rounded border mb-4"
-        />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label>ชื่อ</label>
+            <input
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              className="w-full p-2 rounded border"
+              placeholder="ชื่อ"
+            />
+          </div>
 
-        <label className="block mb-2 font-semibold">อายุ (ปี)</label>
-        <input
-          name="age"
-          value={formData.age}
-          onChange={handleChange}
-          className="w-full p-2 rounded border mb-4"
-        />
+          <div>
+            <label>สายพันธุ์</label>
+            <input
+              name="breed"
+              value={formData.breed}
+              onChange={handleChange}
+              required
+              className="w-full p-2 rounded border"
+              placeholder="เช่น ปั๊ก, โกลเด้น"
+            />
+          </div>
 
-        <label className="block mb-2 font-semibold">โรคประจำตัว (ถ้ามี)</label>
-        <textarea
-          name="disease"
-          value={formData.disease}
-          onChange={handleChange}
-          className="w-full p-2 rounded border mb-4"
-        />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label>เพศ</label>
+              <select
+                name="sex"
+                value={formData.sex}
+                onChange={handleChange}
+                required
+                className="w-full p-2 rounded border"
+              >
+                <option value="">-- เลือกเพศ --</option>
+                <option value="Male">ผู้</option>
+                <option value="Female">เมีย</option>
+              </select>
+            </div>
 
-        <label className="block mb-2 font-semibold">เพศ</label>
-        <select
-          name="sex"
-          value={formData.sex}
-          onChange={handleChange}
-          className="w-full p-2 rounded border mb-6"
-        >
-          <option value="">-- เลือกเพศ --</option>
-          <option value="ผู้">ผู้</option>
-          <option value="เมีย">เมีย</option>
-        </select>
+            <div>
+              <label>อายุ (ปี)</label>
+              <input
+                type="number"
+                name="age"
+                value={formData.age}
+                onChange={handleChange}
+                required
+                className="w-full p-2 rounded border"
+                placeholder="อายุ"
+              />
+            </div>
+          </div>
 
-        <button
-          type="submit"
-          className="bg-yellow-400 hover:bg-yellow-500 text-white w-full py-2 rounded-xl font-semibold flex justify-center items-center gap-2"
-        >
-          📊 คำนวณปริมาณอาหารที่เหมาะสม
-        </button>
-      </form>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label>น้ำหนัก (กก.)</label>
+              <input
+                type="number"
+                name="weight"
+                value={formData.weight}
+                onChange={handleChange}
+                required
+                className="w-full p-2 rounded border"
+                placeholder="น้ำหนัก"
+              />
+            </div>
 
-      {aiResult && (
-        <div className="bg-white rounded-xl shadow-md px-6 py-4 mt-8 w-full max-w-md text-center">
-          <h2 className="text-lg font-bold text-[#4D2C1D] mb-2">
-            📋 ผลลัพธ์จาก AI
-          </h2>
-          <p>มื้อเช้า: <span className="text-red-500 font-semibold">{aiResult.breakfast}</span></p>
-          <p>มื้อกลางวัน: <span className="text-red-500 font-semibold">{aiResult.lunch}</span></p>
-          <p>มื้อเย็น: <span className="text-red-500 font-semibold">{aiResult.dinner}</span></p>
-          <p className="text-sm text-gray-500 mt-2">* ข้อมูลโดย AI จาก backend</p>
-        </div>
-      )}
+            <div>
+              <label>โรคประจำตัว (ถ้ามี)</label>
+              <input
+                name="disease"
+                value={formData.disease}
+                onChange={handleChange}
+                className="w-full p-2 rounded border"
+                placeholder="ไม่มี / หรือระบุโรค"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="bg-yellow-400 hover:bg-yellow-500 text-white py-2 px-4 rounded-full w-full font-semibold mt-4"
+          >
+            📊 คำนวณปริมาณอาหารที่เหมาะสม
+          </button>
+        </form>
+
+        {aiResult && (
+          <div className="bg-white rounded-lg shadow-md p-4 mt-6 text-center">
+            <h2 className="text-lg font-semibold text-brown-700 mb-2">
+              🍽️ ผลลัพธ์จาก AI
+            </h2>
+            <p className="text-brown-800">มื้อเช้า: {aiResult.breakfast} กรัม</p>
+            <p className="text-brown-800">มื้อกลางวัน: {aiResult.lunch} กรัม</p>
+            <p className="text-brown-800">มื้อเย็น: {aiResult.dinner} กรัม</p>
+            <p className="text-xs text-gray-500 mt-2">* ข้อมูลโดย AI จาก backend</p>
+          </div>
+        )}
+      </div>
     </motion.div>
   );
 };

@@ -4,21 +4,74 @@ import TotolFoodImage from "../assets/อาหารทั้งหมด.png";
 import RemainingFoodImage from "../assets/อาหารเหลือ.png";
 import IconFood from "../assets/iconfood.png";
 import { motion } from "framer-motion";
+import { API_BASE_URL } from "../utils/api";
+
 
 const HomePage: React.FC = () => {
-  const [foodLeft, setFoodLeft] = useState<number | null>(null);
-  const [time, setTime] = useState<string>("");
+  const [currentFood, setCurrentFood] = useState<number | null>(null);
+  const [foodCapacity, setFoodCapacity] = useState<number | null>(null);
+  const [error, setError] = useState<string>("");
+  const [totalWeeklyFood, setTotalWeeklyFood] = useState<number | null>(null);
+  const [leftoverWeeklyFood, setLeftoverWeeklyFood] = useState<number | null>(null);
+  const [feeding, setFeeding] = useState<boolean>(false);
+
+  // ใช้ซ้ำได้ทั้งตอนโหลดครั้งแรกและหลังให้อาหาร
+  const loadFeederAndHistory = async () => {
+    try {
+      // Feeder
+      const feederRes = await fetch(`${API_BASE_URL}/feeder/1`);
+      if (!feederRes.ok) throw new Error("ไม่สามารถโหลดข้อมูลฟีดเดอร์ได้");
+      const feederData = await feederRes.json();
+      setCurrentFood(feederData.current_food);
+      setFoodCapacity(feederData.food_capacity);
+
+      // History
+      const historyRes = await fetch(`${API_BASE_URL}/history`);
+      if (!historyRes.ok) throw new Error("ไม่สามารถโหลดประวัติการให้อาหารได้");
+      const historyData = await historyRes.json();
+
+      const thisWeek = historyData.filter((item: any) => {
+        const date = new Date(item.timestamp);
+        const now = new Date();
+        const thisWeekStart = new Date(now);
+        thisWeekStart.setDate(now.getDate() - now.getDay());
+        return date >= thisWeekStart;
+      });
+
+      const total = thisWeek.reduce((sum: number, item: any) => sum + (item.food_given || 0), 0);
+      const leftover = thisWeek.reduce((sum: number, item: any) => sum + (item.food_left || 0), 0);
+
+      setTotalWeeklyFood(total);
+      setLeftoverWeeklyFood(leftover);
+    } catch (err) {
+      console.error(err);
+      setError("เกิดข้อผิดพลาดในการโหลดข้อมูล");
+    }
+  };
 
   useEffect(() => {
-    fetch("https://feedio.loca.lt") // ✅ เพิ่ม endpoint ที่ถูกต้อง
-      .then(res => res.json())
-      .then(data => {
-        setFoodLeft(data.remaining);
-        const now = new Date();
-        setTime(now.toLocaleTimeString());
-      })
-      .catch(err => console.error("Error fetching data:", err));
+    loadFeederAndHistory();
   }, []);
+
+  const handleFeed = async () => {
+    setFeeding(true);
+    try {
+      const res = await fetch('${API_BASE_URL}/history', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ feeder_id: 1 }),
+      });
+
+      if (!res.ok) throw new Error("การให้อาหารล้มเหลว");
+
+      await loadFeederAndHistory();
+    } catch (err) {
+      console.error(err);
+      setError("ไม่สามารถให้อาหารได้");
+    } finally {
+      setFeeding(false);
+    }
+  };
 
   return (
     <motion.div
@@ -40,7 +93,6 @@ const HomePage: React.FC = () => {
             </h1>
           </motion.div>
 
-          {/* รูปน้องหมา */}
           <div className="flex justify-center my-4">
             <motion.img
               src={dogImage}
@@ -54,16 +106,18 @@ const HomePage: React.FC = () => {
 
           {/* ปุ่มให้อาหาร */}
           <div className="flex justify-center">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-2 px-6 rounded-xl shadow-md"
+            <button
+              onClick={handleFeed}
+              disabled={feeding}
+              className={`bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-2 px-6 rounded-xl shadow-md ${
+                feeding ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
-              🍲 กดเพื่อให้อาหารสัตว์ของคุณ
-            </motion.button>
+              {feeding ? "🍲 กำลังให้อาหาร..." : "🍲 กดเพื่อให้อาหารสัตว์ของคุณ"}
+            </button>
           </div>
 
-          {/* แสดงอาหารที่เหลือ */}
+          {/* อาหารคงเหลือ */}
           <img
             src={IconFood}
             alt="iconfood"
@@ -75,15 +129,15 @@ const HomePage: React.FC = () => {
               ปริมาณอาหารคงเหลือ
             </p>
             <div className="text-5xl font-bold text-[#E94F1D]">
-              {foodLeft !== null ? `${foodLeft.toFixed(1)} กรัม` : "กำลังโหลด..."}
+              {currentFood !== null ? `${currentFood.toFixed(1)} กรัม` : "โหลดข้อมูล..."}
             </div>
           </div>
           <p className="text-sm text-[#4D2C1D] mt-4 text-center">
-            ปริมาณอาหารคงเหลือ ณ เวลา {time}
+            {error ? error : `ความจุสูงสุด: ${foodCapacity ?? "-"} กรัม`}
           </p>
 
           {/* สรุปอาทิตย์ */}
-          <div className="mt-10 ">
+          <div className="mt-10">
             <h2 className="text-xl font-semibold text-center">ใน 1 อาทิตย์...</h2>
             <div className="flex justify-center gap-8 mt-4">
               <div>
@@ -96,7 +150,7 @@ const HomePage: React.FC = () => {
                 <p className="text-center mt-2 text-[#E94F1D]">
                   กินไปทั้งหมด
                   <br />
-                  00.0 กรัม
+                  {totalWeeklyFood !== null ? `${totalWeeklyFood.toFixed(1)} กรัม` : "-"}
                 </p>
               </div>
               <div>
@@ -109,11 +163,10 @@ const HomePage: React.FC = () => {
                 <p className="text-center mt-2 text-[#E94F1D]">
                   กินเหลือ
                   <br />
-                  00.0 กรัม
+                  {leftoverWeeklyFood !== null ? `${leftoverWeeklyFood.toFixed(1)} กรัม` : "-"}
                 </p>
               </div>
             </div>
-            <div className="bg-cream pt-6 pb-10"></div>
           </div>
         </main>
       </div>
