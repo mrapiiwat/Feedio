@@ -2,6 +2,14 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { API_BASE_URL } from "../utils/api";
 
+interface FormData {
+  name: string;
+  breed: string;
+  weight: number;
+  age: number;
+  disease: string;
+  sex: string;
+}
 const BlogPage: React.FC = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -21,7 +29,9 @@ const BlogPage: React.FC = () => {
   const [error, setError] = useState("");
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -72,7 +82,7 @@ const BlogPage: React.FC = () => {
     >
       <div className="max-w-xl mx-auto bg-[#fff0c2] p-6 rounded-xl shadow-lg">
         <h1 className="text-2xl font-bold mb-4 text-center text-brown-800">
-        🤖 AI ผู้ช่วยคำนวณอาหารสำหรับน้องหมา
+          🤖 AI ผู้ช่วยคำนวณอาหารสำหรับน้องหมา
         </h1>
 
         {error && (
@@ -173,10 +183,14 @@ const BlogPage: React.FC = () => {
             <h2 className="text-lg font-semibold text-brown-700 mb-2">
               🍽️ ผลลัพธ์จาก AI
             </h2>
-            <p className="text-brown-800">มื้อเช้า: {aiResult.breakfast} กรัม</p>
+            <p className="text-brown-800">
+              มื้อเช้า: {aiResult.breakfast} กรัม
+            </p>
             <p className="text-brown-800">มื้อกลางวัน: {aiResult.lunch} กรัม</p>
             <p className="text-brown-800">มื้อเย็น: {aiResult.dinner} กรัม</p>
-            <p className="text-xs text-gray-500 mt-2">* ข้อมูลโดย AI จาก backend</p>
+            <p className="text-xs text-gray-500 mt-2">
+              * ข้อมูลโดย AI จาก backend
+            </p>
           </div>
         )}
       </div>

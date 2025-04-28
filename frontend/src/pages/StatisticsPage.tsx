@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { motion } from "framer-motion";
@@ -10,10 +11,10 @@ const StatisticsPage: React.FC = () => {
   const [filteredData, setFilteredData] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/history`)
-      .then((res) => res.json())
-      .then((data) => {
-        setHistoryData(data);
+    axios
+      .get(`${import.meta.env.VITE_API_URL}/api/history`)
+      .then((res) => {
+        setHistoryData(res.data.history); // ✅ เข้าถึง array จริง ๆ
       })
       .catch((err) => console.error("Error fetching history:", err));
   }, []);
@@ -60,9 +61,7 @@ const StatisticsPage: React.FC = () => {
             placeholderText="เลือกวันที่เริ่มต้น"
             className="border rounded-lg p-2 text-center"
           />
-
           <span className="mx-2">ถึง</span>
-
           <DatePicker
             selected={endDate || undefined}
             onChange={(date) => setEndDate(date)}
