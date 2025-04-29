@@ -1,6 +1,16 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { API_BASE_URL } from "../utils/api";
+import axios from "axios";
+
+interface FormData {
+  name: string;
+  breed: string;
+  weight: number;
+  disease: string;
+  age: number;
+  sex: string;
+}
 
 interface FormData {
   name: string;
@@ -11,11 +21,11 @@ interface FormData {
   sex: string;
 }
 const BlogPage: React.FC = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     breed: "",
-    weight: "",
-    age: "",
+    weight: 0,
+    age: 0,
     disease: "",
     sex: "",
   });
@@ -43,33 +53,28 @@ const BlogPage: React.FC = () => {
     setAiResult(null);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/dog`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+      const res = await axios.post(`${API_BASE_URL}/dog`, {
+        name: formData.name,
+        breed: formData.breed,
+        weight: Number(formData.weight),
+        disease: formData.disease,
+        age: Number(formData.age),
+        sex: formData.sex,
       });
 
-      const data = await res.json();
+      const dogId = res.data.dog.Dog_ID;
 
-      if (data?.dog?.id) {
-        const res2 = await fetch(`${API_BASE_URL}/dog/${data.dog.id}`);
-        const result = await res2.json();
+      await new Promise((resolve) => setTimeout(resolve, 5000));
 
-        if (result?.dog?.AIRecommendations) {
-          setAiResult({
-            breakfast: result.dog.AIRecommendations.Recommended_Breakfast,
-            lunch: result.dog.AIRecommendations.Recommended_Lunch,
-            dinner: result.dog.AIRecommendations.Recommended_Dinner,
-          });
-        } else {
-          setError("ไม่พบผลลัพธ์จาก AI");
-        }
-      } else {
-        setError("ไม่พบ ID ที่ได้จาก backend");
-      }
+      const ai = await axios.get(`${API_BASE_URL}/recom/dog/${dogId}`);
+
+      setAiResult({
+        breakfast: ai.data.recommendation[0].Recommended_Breakfast,
+        lunch: ai.data.recommendation[0].Recommended_Lunch,
+        dinner: ai.data.recommendation[0].Recommended_Dinner,
+      });
     } catch (err) {
-      console.error(err);
-      setError("เกิดข้อผิดพลาดในการเชื่อมต่อ AI");
+      console.log(err);
     }
   };
 

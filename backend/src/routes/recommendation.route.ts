@@ -110,5 +110,6 @@ router.get("/recom", recomController.getRecommendation);
  *                   example: "An error occurred"
  */
 router.get("/recom/:id", recomController.getRecommendationById);
+router.get("/recom/dog/:id", recomController.getRecommendationByDogid);
 
 export default router;
