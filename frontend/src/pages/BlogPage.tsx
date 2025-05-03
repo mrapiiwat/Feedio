@@ -7,19 +7,11 @@ interface FormData {
   name: string;
   breed: string;
   weight: number;
-  disease: string;
   age: number;
+  disease: string;
   sex: string;
 }
 
-interface FormData {
-  name: string;
-  breed: string;
-  weight: number;
-  age: number;
-  disease: string;
-  sex: string;
-}
 const BlogPage: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -37,6 +29,7 @@ const BlogPage: React.FC = () => {
   } | null>(null);
 
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -51,6 +44,7 @@ const BlogPage: React.FC = () => {
     e.preventDefault();
     setError("");
     setAiResult(null);
+    setIsLoading(true);
 
     try {
       const res = await axios.post(`${API_BASE_URL}/dog`, {
@@ -63,18 +57,26 @@ const BlogPage: React.FC = () => {
       });
 
       const dogId = res.data.dog.Dog_ID;
+      localStorage.setItem("dogId", dogId);
 
       await new Promise((resolve) => setTimeout(resolve, 5000));
 
       const ai = await axios.get(`${API_BASE_URL}/recom/dog/${dogId}`);
+
+      if (!ai.data.recommendation || ai.data.recommendation.length === 0) {
+        throw new Error("AI ไม่สามารถให้คำแนะนำได้ในขณะนี้");
+      }
 
       setAiResult({
         breakfast: ai.data.recommendation[0].Recommended_Breakfast,
         lunch: ai.data.recommendation[0].Recommended_Lunch,
         dinner: ai.data.recommendation[0].Recommended_Dinner,
       });
-    } catch (err) {
+    } catch (err: any) {
       console.log(err);
+      setError(err.message || "เกิดข้อผิดพลาดในการเชื่อมต่อกับ AI");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -182,6 +184,12 @@ const BlogPage: React.FC = () => {
             📊 คำนวณปริมาณอาหารที่เหมาะสม
           </button>
         </form>
+
+        {isLoading && (
+          <div className="text-center mt-4 text-yellow-600 font-medium animate-pulse">
+            🔄 กำลังประมวลผลโดย AI... กรุณารอสักครู่
+          </div>
+        )}
 
         {aiResult && (
           <div className="bg-white rounded-lg shadow-md p-4 mt-6 text-center">

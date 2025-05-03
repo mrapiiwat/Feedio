@@ -1,43 +1,52 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { motion } from "framer-motion";
+import axios from "axios";
+import { API_BASE_URL } from "../utils/api";
+import dayjs from 'dayjs'
+import 'dayjs/locale/th'
 
 const StatisticsPage: React.FC = () => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
-  const [historyData, setHistoryData] = useState<any[]>([]);
+  const [historyData, _setHistoryData] = useState<any[]>([]);
   const [filteredData, setFilteredData] = useState<any[]>([]);
 
   useEffect(() => {
-    axios
-      .get(`${import.meta.env.VITE_API_URL}/api/history`)
-      .then((res) => {
-        setHistoryData(res.data.history); // ✅ เข้าถึง array จริง ๆ
-      })
-      .catch((err) => console.error("Error fetching history:", err));
-  }, []);
-
-  useEffect(() => {
-    if (startDate && endDate) {
-      const filtered = historyData.filter((item: any) => {
-        const itemDate = new Date(item.timestamp);
-        return itemDate >= startDate && itemDate <= endDate;
-      });
-      setFilteredData(filtered);
-    } else {
-      setFilteredData([]);
+    const fetchData = async () => {
+      if (startDate && endDate) {
+        const start = dayjs(startDate.toLocaleDateString()).format('YYYY/MM/DD')
+        const end = dayjs(endDate.toLocaleDateString()).format('YYYY/MM/DD')
+        const query = new URLSearchParams();
+        query.append('start', start)
+        query.append('end', end)
+        await getAllHistory (query.toString());
+      } else {
+        setFilteredData([]);
+      }
     }
+
+    fetchData();
   }, [startDate, endDate, historyData]);
 
+
+  const getAllHistory = async (query?: string) => {
+    try {
+      const filter = query ? `?${query}`: '';
+      const responses = await axios.get(`${API_BASE_URL}/history${filter}`)
+
+      setFilteredData(responses.data.history ?? []);
+    } catch (error) {
+      alert('เกิดข้อผิดพลาดกรุณาลองอีกครั้ง')
+    }
+  }
+
   const totalEaten = filteredData
-    .filter((item: any) => item.type === "eaten")
-    .reduce((sum: number, item: any) => sum + (item.amount || 0), 0);
+    .reduce((sum: number, item: any) => sum + (item.Given_Amount || 0), 0);
 
   const totalLeft = filteredData
-    .filter((item: any) => item.type === "left")
-    .reduce((sum: number, item: any) => sum + (item.amount || 0), 0);
+    .reduce((sum: number, item: any) => sum + (item.Remaining_Amount || 0), 0);
 
   return (
     <motion.div
@@ -61,7 +70,9 @@ const StatisticsPage: React.FC = () => {
             placeholderText="เลือกวันที่เริ่มต้น"
             className="border rounded-lg p-2 text-center"
           />
+
           <span className="mx-2">ถึง</span>
+
           <DatePicker
             selected={endDate || undefined}
             onChange={(date) => setEndDate(date)}
@@ -111,21 +122,13 @@ const StatisticsPage: React.FC = () => {
                   filteredData.map((item: any, index: number) => (
                     <tr key={index} className="text-center">
                       <td className="py-3 px-4 border-b">
-                        {new Date(item.timestamp).toLocaleDateString("th-TH", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })}
+                        {dayjs(item.Date).locale('th').format('dddd D MMM')}
                       </td>
                       <td className="py-3 px-4 border-b text-[#E94F1D]">
-                        {item.type === "eaten"
-                          ? `${item.amount.toFixed(1)} กรัม`
-                          : "-"}
+                        {`${item.Given_Amount.toFixed(1)} กรัม`}
                       </td>
                       <td className="py-3 px-4 border-b text-[#E94F1D]">
-                        {item.type === "left"
-                          ? `${item.amount.toFixed(1)} กรัม`
-                          : "-"}
+                        {`${item.Remaining_Amount.toFixed(1)} กรัม`}
                       </td>
                     </tr>
                   ))

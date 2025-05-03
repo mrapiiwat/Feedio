@@ -1,6 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
+import Notification from "./Notification";
 
 const Navbar: React.FC = () => {
   return (
@@ -69,6 +70,11 @@ const Navbar: React.FC = () => {
             >
               🏠เกี่ยวกับเรา
             </NavLink>
+          </li>
+
+          {/* 🔔 Notification */}
+          <li>
+            <Notification />
           </li>
         </ul>
       </nav>

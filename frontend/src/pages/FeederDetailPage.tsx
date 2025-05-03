@@ -1,23 +1,28 @@
 import React, { useEffect, useState } from "react";
 import { API_BASE_URL } from "../utils/api";
+import MealStatusTable from "../components/MealStatusTable";
 
 const FeederDetailPage: React.FC = () => {
-  const [feederData, setFeederData] = useState<any>(null);
+  const [feederData, _setFeederData] = useState<any>(null);
   const [historyData, setHistoryData] = useState<any[]>([]);
   const [cameraImageUrl, setCameraImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [feedAmount, setFeedAmount] = useState<number>(50); // ค่าเริ่มต้น
-  const [successMessage, setSuccessMessage] = useState<string>("");
-
+  const [successMessage, _setSuccessMessage] = useState<string>("");
+  // const [dogId] = useState<string>("b293c543-ee70-4e15-a3d9-73dd0f00ad5d");
+  const [_sumAmount, setSumAmount] = useState(0);
   useEffect(() => {
-    fetch(`${API_BASE_URL}/feeder/1`)
-      .then((res) => {
-        if (!res.ok) throw new Error("ไม่สามารถโหลดข้อมูลฟีดเดอร์ได้");
-        return res.json();
-      })
-      .then((res) => res.json())
-      .then((data) => setFeederData(data))
-      .catch((err) => console.error("Feeder error:", err));
+    // fetch(`${API_BASE_URL}/feeder/1`, {
+    //   method: 'POST',
+    //   headers: { "authorization": "sadfsdfsdf" },
+    // })
+    //   .then((res) => {
+    //     if (!res.ok) throw new Error("ไม่สามารถโหลดข้อมูลฟีดเดอร์ได้");
+    //     return res.json();
+    //   })
+    //   .then((res) => res.json())
+    //   .then((data) => setFeederData(data))
+    //   .catch((err) => console.error("Feeder error:", err));
 
     fetch(`${API_BASE_URL}/history`)
       .then((res) => {
@@ -42,50 +47,43 @@ const FeederDetailPage: React.FC = () => {
       .catch((err) => console.error("ไม่สามารถโหลดภาพกล้อง:", err));
   }, []);
 
-  const handleFeed = () => {
-    fetch(`${API_BASE_URL}/history`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        feeder_id: 1,
-        method: "manual",
-        given_amount: feedAmount,
-      }),
-    })
-      .then((res) => res.json())
-      .then(() => {
-        setSuccessMessage(`ให้อาหาร ${feedAmount} กรัม เรียบร้อยแล้ว!`);
-        setTimeout(() => {
-          setSuccessMessage("");
-          window.location.reload(); // โหลดใหม่เพื่ออัปเดตข้อมูล
-        }, 2000);
-      })
-      .catch((err) => {
-        console.error("Feed error:", err);
-        alert("เกิดข้อผิดพลาดในการให้อาหาร");
+  const handleFeed = async () => {
+    try {
+      const payload = {
+        food_capa: feedAmount,
+        current_food: feedAmount,
+      }
+
+      const response = await fetch(`${API_BASE_URL}/feeder`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload),
       });
+
+      if (!response.ok) {
+        alert("ไม่สามารถให้อาหารได้")
+      }
+
+      const listFeeder = await fetch(`${API_BASE_URL}/feeder`);
+      const data = await listFeeder.json();
+      const amount = data?.feeders.map((item: {Current_Food: number}) => item.Current_Food) || [];
+      const sum = amount.reduce((acc: number, item: number) => {
+        return acc + item;
+      }, 0);
+      setSumAmount(sum);
+    } catch (error) {
+      alert("เกิดข้อผิดพลาดในการให้อาหาร");
+    }
   };
 
   const manualFeeds = historyData.filter((item) => item.method === "manual");
   const manualFeedCount = manualFeeds.length;
-  const manualFeedTotal = manualFeeds.reduce((sum, item) => sum + (item.given_amount || 0), 0);
+  const manualFeedTotal = manualFeeds.reduce((sum, item) => sum + (item.Given_Amount || 0), 0);
   const lastFeedTime = feederData?.updated_at
     ? new Date(feederData.updated_at).toLocaleTimeString("th-TH")
     : "xx:xx";
-
-  const isMealGiven = (hourRange: [number, number]) => {
-    const today = new Date().toISOString().split("T")[0];
-    return historyData.some((item) => {
-      const date = new Date(item.timestamp);
-      const itemDate = date.toISOString().split("T")[0];
-      const hour = date.getHours();
-      return itemDate === today && hour >= hourRange[0] && hour < hourRange[1];
-    });
-  };
-
-  const morningDone = isMealGiven([6, 10]);
-  const noonDone = isMealGiven([11, 14]);
-  const eveningDone = isMealGiven([17, 20]);
 
   return (
     <div className="min-h-screen bg-[#FFF8ED] px-6 py-8">
@@ -109,7 +107,8 @@ const FeederDetailPage: React.FC = () => {
           </div>
 
           {/* ตารางสถานะมื้ออาหาร */}
-          <div className="bg-white rounded-xl shadow p-6">
+          <MealStatusTable />
+          {/* <div className="bg-white rounded-xl shadow p-6">
             <h2 className="text-xl font-bold mb-4 text-[#4D2C1D]">🍽 สถานะมื้ออาหารวันนี้</h2>
             <ul className="space-y-2">
               <li className="flex justify-between">
@@ -131,7 +130,7 @@ const FeederDetailPage: React.FC = () => {
                 </span>
               </li>
             </ul>
-          </div>
+          </div> */}
 
           {/* ป้อนอาหารเอง */}
           <div className="bg-white rounded-xl shadow p-6 text-center">

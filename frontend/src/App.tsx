@@ -7,6 +7,7 @@ import BlogPage from "./pages/BlogPage";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
+import NotificationsPage from "./pages/NotificationsPage";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="/statistics" element={<StatisticsPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/blog" element={<BlogPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
         </Routes>
       </main>
       <Footer />
