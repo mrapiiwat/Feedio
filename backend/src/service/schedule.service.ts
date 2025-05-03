@@ -5,9 +5,16 @@ export const getAllSchedules = async () => {
 };
 
 export const createSchedule = async (scheduleData: any) => {
-  return await prisma.feeding_Schedule.create({
-    data: scheduleData,
+   const resCreate =await prisma.feeding_Schedule.create({
+    data: {
+      Feeder_ID: scheduleData.feederID,
+      Dog_ID: scheduleData.dogID,
+      Food_Amount: scheduleData.foodAmount,
+      Day_Type: scheduleData.dayType,
+    },
   });
+
+  return {scheduleId: resCreate?.Schedule_ID}
 };
 
 export const updateSchedule = async (id: string, scheduleData: any) => {
@@ -15,6 +22,10 @@ export const updateSchedule = async (id: string, scheduleData: any) => {
     where: {
       Schedule_ID: id,
     },
-    data: scheduleData,
+    data: {
+      Feeder_ID: scheduleData.feederID,
+      Dog_ID: scheduleData.dogID,
+      Food_Amount: scheduleData.foodAmount,
+    },
   });
 };

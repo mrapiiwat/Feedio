@@ -91,7 +91,7 @@ export const updateDog = async (req: Request, res: Response) => {
 
     req.body.dogId = dogId;
     const recom = await recomController.getRecommendationByDogId(req, res);
-    recom?.map((rec) => {
+    recom?.map((rec: {Recommendation_ID: string}) => {
       req.params.id = rec.Recommendation_ID;
     });
     await recomController.updateRecommendation(req, res);
@@ -123,7 +123,7 @@ export const deleteDog = async (req: Request, res: Response) => {
     const dogId = req.params.id;
     req.params.id = dogId;
     const recom = await recomController.getRecommendationByDogId(req, res);
-    recom?.map((rec) => {
+    recom?.map((rec: {Recommendation_ID: string}) => {
       req.params.id = rec.Recommendation_ID;
     });
 

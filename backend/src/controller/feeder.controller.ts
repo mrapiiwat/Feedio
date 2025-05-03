@@ -12,8 +12,9 @@ export const getFeeders = async (req: Request, res: Response) => {
         .status(StatusCodes.OK)
         .json({ message: "Get all feeders successfully", feeders });
     } else if (feeders && feeders.length === 0) {
-      res.status(StatusCodes.NOT_FOUND).json({
+      res.status(StatusCodes.OK).json({
         message: "No feeders found",
+        feeders: [],
       });
     }
   } catch (error) {

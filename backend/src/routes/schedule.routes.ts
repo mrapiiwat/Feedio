@@ -111,9 +111,20 @@ router.post("/schedules", scheduleController.createSchedule);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/Schedule'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *             properties:
+ *               feederID:
+ *                 type: string  
+ *                 example: 7f3b7850-7790-4953-8d38-1f9391d5c4b3
+ *               dogID:
+ *                 type: string  
+ *                 example: de7f5866-fa9e-4d8e-8880-de54d66d6e2d
+ *               foodAmount:
+ *                 type: number
+ *                 example: 10
  *     responses:
  *       200:
  *         description: Schedule updated successfully
@@ -158,6 +169,6 @@ router.post("/schedules", scheduleController.createSchedule);
  *                   type: string
  *                   example: An error occurred
  */
-router.put("/schedules", scheduleController.updateSchedule);
+router.put("/schedules/:id", scheduleController.updateSchedule);
 
 export default router;

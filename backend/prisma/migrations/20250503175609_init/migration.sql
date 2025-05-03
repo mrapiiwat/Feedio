@@ -16,7 +16,9 @@ CREATE TABLE "Feeder" (
     "Feeder_ID" TEXT NOT NULL,
     "Food_Capacity" DOUBLE PRECISION NOT NULL,
     "Current_Food" DOUBLE PRECISION NOT NULL,
-    "Status" TEXT NOT NULL,
+    "Status" BOOLEAN NOT NULL DEFAULT true,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Feeder_pkey" PRIMARY KEY ("Feeder_ID")
 );
@@ -26,8 +28,9 @@ CREATE TABLE "Feeding_Schedule" (
     "Schedule_ID" TEXT NOT NULL,
     "Feeder_ID" TEXT NOT NULL,
     "Dog_ID" TEXT NOT NULL,
-    "Feeding_Time" TIMESTAMP(3) NOT NULL,
+    "Feeding_Time" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "Food_Amount" DOUBLE PRECISION NOT NULL,
+    "Day_Type" TEXT NOT NULL,
 
     CONSTRAINT "Feeding_Schedule_pkey" PRIMARY KEY ("Schedule_ID")
 );
