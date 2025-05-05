@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start:dev": "nodemon --legacy-watch --ext ts --watch src --exec ts-node src/main.ts",
-    "start": "node .",
+    "start": "prisma migrate deploy && node ./dist/main.js",
     "prestart": "npm run build",
     "build": "tsc",
     "start:tunnel": "npx localtunnel --port 5000 --subdomain feedio"
@@ -40,7 +40,6 @@
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "nodemon": "^3.1.9",
-    "ts-node": "^10.9.2",
-    "tsc": "^2.0.4"
+    "ts-node": "^10.9.2"
   }
 }
