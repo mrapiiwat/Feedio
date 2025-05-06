@@ -29,7 +29,7 @@ export default function Notification() {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/api/noti`);
+        const res = await axios.get(`${API_BASE_URL}/noti`);
         const notiList = res.data.getNoti.map((n: any, index: number) => ({
           id: index + 1,
           message: n.Message,
