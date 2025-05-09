@@ -55,7 +55,7 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // Version route
-app.get("/api/version", (_req, res) => {
+app.get("/version", (_req, res) => {
   res.json({ version: "1.0.0" });
 });
 

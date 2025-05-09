@@ -139,38 +139,41 @@ const FeederDetailPage: React.FC = () => {
             <label htmlFor="amount" className="block mb-1 text-sm font-medium text-[#4D2C1D]">
               ระบุปริมาณอาหาร (กรัม)
             </label>
-            <input
-              type="number"
-              id="amount"
-              className="w-full max-w-xs border border-gray-300 rounded-md px-3 py-2 mb-4 text-center"
-              value={feedAmount}
-              onChange={(e) => setFeedAmount(Number(e.target.value))}
-              min={1}
-              max={500}
-            />
+            <div className="space-x-3">
 
-            <button
-              className="bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-2 px-6 rounded-full shadow"
-              onClick={handleFeed}
-            >
-              🍲 ให้อาหารตอนนี้
-            </button>
+              <input
+                type="number"
+                id="amount"
+                className="w-full max-w-xs border border-gray-300 rounded-md px-3 py-2 mb-4 text-center"
+                value={feedAmount}
+                onChange={(e) => setFeedAmount(Number(e.target.value))}
+                min={1}
+                max={500}
+              />
 
-            {/* แจ้งเตือน popup */}
-            {successMessage && (
-              <div className="mt-4 p-2 bg-green-100 border border-green-400 text-green-700 rounded">
-                {successMessage}
-              </div>
-            )}
+              <button
+                className="bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-2 px-6 rounded-full shadow"
+                onClick={handleFeed}
+              >
+                🍲 ให้อาหารตอนนี้
+              </button>
 
-            <p className="text-sm mt-4 text-gray-600">
-              ปริมาณอาหารที่เหลือในถัง:{" "}
-              <span className="font-semibold text-red-600">
-                {feederData?.current_food?.toFixed(1) || "0"} กรัม
-              </span>
-            </p>
-            <p className="text-xs text-gray-400">อัปเดตล่าสุด: {lastFeedTime} น.</p>
-          </div>
+              {/* แจ้งเตือน popup */}
+              {successMessage && (
+                <div className="mt-4 p-2 bg-green-100 border border-green-400 text-green-700 rounded">
+                  {successMessage}
+                </div>
+              )}
+
+              <p className="text-sm mt-4 text-gray-600">
+                ปริมาณอาหารที่เหลือในถัง:{" "}
+                <span className="font-semibold text-red-600">
+                  {feederData?.current_food?.toFixed(1) || "0"} กรัม
+                </span>
+              </p>
+              <p className="text-xs text-gray-400">อัปเดตล่าสุด: {lastFeedTime} น.</p>
+            </div>
+            </div>
 
           {/* สรุปการให้อาหารเอง */}
           <div className="bg-white rounded-xl shadow p-6">
