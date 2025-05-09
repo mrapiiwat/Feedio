@@ -33,7 +33,7 @@ const limiter = rateLimit({
   message: "Too many requests, please try again later.",
 });
 
-app.use(limiter); // Apply rate limiting to all requests
+// app.use(limiter); // Apply rate limiting to all requests
 
 app.get("/api/version", (req, res) => {
   res.json({ version: "1.0.0" });
