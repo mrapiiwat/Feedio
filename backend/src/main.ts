@@ -68,7 +68,28 @@ import notificationRoutes from "./routes/notification.route";
 import weightSensorRoutes from "./routes/wrightSensor.route";
 import historyRoutes from "./routes/history.route";
 
-// API Routes
+const port = process.env.PORT ? parseInt(process.env.PORT) : 5000;
+const app = express();
+
+app.use(morgan("dev"));
+app.use(express.json());
+app.use(cors());
+
+setupSwagger(app); // Initialize Swagger documentation
+// Limit requests per IP
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 10,
+  message: "Too many requests, please try again later.",
+});
+
+app.use(limiter); // Apply rate limiting to all requests
+
+app.get("/api/version", (req, res) => {
+  res.json({ version: "1.0.0" });
+});
+
+//Routes
 app.use("/api", dogRoutes);
 app.use("/api", recommendationRoutes);
 app.use("/api", feederRoutes);
