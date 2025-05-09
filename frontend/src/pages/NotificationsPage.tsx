@@ -6,6 +6,7 @@ interface NotificationItem {
   id: number;
   message: string;
   read: boolean;
+  
 }
 
 const NotificationsPage: React.FC = () => {
