@@ -1,7 +1,6 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import morgan from "morgan";
-import dotenv from "dotenv";
 import rateLimit from "express-rate-limit";
 import multer from "multer";
 import path from "path";
@@ -92,6 +91,7 @@ app.use("/api", scheduleRoutes);
 app.use("/api", notificationRoutes);
 app.use("/api", weightSensorRoutes);
 app.use("/api", historyRoutes);
+
 // Image upload + Python predict route
 app.post("/upload", upload.single("image"), async (req: Request, res: Response) => {
   if (!req.file) {
