@@ -1,17 +1,21 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, Express } from "express";
+import rateLimit from "express-rate-limit";
+import { spawn } from "child_process";
 import cors from "cors";
 import morgan from "morgan";
-import dotenv from "dotenv";
-// import rateLimit from "express-rate-limit";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { spawn } from "child_process";
 
-// Config .env
-dotenv.config();
+// Import routes
+import dogRoutes from "./routes/dog.route";
+import recommendationRoutes from "./routes/recommendation.route";
+import feederRoutes from "./routes/feeder.route";
+import scheduleRoutes from "./routes/schedule.routes";
+import notificationRoutes from "./routes/notification.route";
+import weightSensorRoutes from "./routes/wrightSensor.route";
+import historyRoutes from "./routes/history.route";
 
-const port = process.env.PORT ? parseInt(process.env.PORT) : 5000;
 const app = express();
 
 const predict: string[] = [];
@@ -24,10 +28,18 @@ if (!fs.existsSync(uploadDir)) {
 
 // Multer config
 const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
+  destination: (
+    req: Request,
+    _file: Express.Multer.File,
+    cb: multer.FileFilterCallback
+  ) => {
     cb(null, uploadDir);
   },
-  filename: (_req, file, cb) => {
+  filename: (
+    req: Request,
+    file: Express.Multer.File,
+    cb: multer.FileFilterCallback
+  ) => {
     cb(null, file.originalname);
   },
 });
@@ -43,41 +55,16 @@ app.use(cors());
 const rootDir = path.resolve(__dirname, "..");
 app.use("/api/uploads", express.static(path.join(rootDir, "Uploads")));
 
-
 // Setup Swagger
 import { setupSwagger } from "./config/swagger";
 setupSwagger(app);
-
-// Rate limiter
-// const limiter = rateLimit({
-//   windowMs: 1 * 60 * 1000,
-//   max: 10,
-//   message: "Too many requests, please try again later.",
-// });
-// app.use(limiter);
-
-// Version route
-app.get("/version", (_req, res) => {
-  res.json({ version: "1.0.0" });
-});
-
-// Import routes
-import dogRoutes from "./routes/dog.route";
-import recommendationRoutes from "./routes/recommendation.route";
-import feederRoutes from "./routes/feeder.route";
-import scheduleRoutes from "./routes/schedule.routes";
-import notificationRoutes from "./routes/notification.route";
-import weightSensorRoutes from "./routes/wrightSensor.route";
-import historyRoutes from "./routes/history.route";
-
-const port = process.env.PORT ? parseInt(process.env.PORT) : 5000;
-const app = express();
 
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(cors());
 
 setupSwagger(app); // Initialize Swagger documentation
+
 // Limit requests per IP
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
@@ -85,9 +72,9 @@ const limiter = rateLimit({
   message: "Too many requests, please try again later.",
 });
 
-app.use(limiter); // Apply rate limiting to all requests
+// app.use(limiter); // Apply rate limiting to all requests
 
-app.get("/api/version", (req, res) => {
+app.get("/api/version", (req: Request, res: Response) => {
   res.json({ version: "1.0.0" });
 });
 
@@ -105,7 +92,7 @@ app.post("/upload", upload.single("image"), (req: Request, res: Response) => {
   if (!req.file) {
     console.log("No image uploaded or invalid format");
     res.status(400).send("No image uploaded");
-    return; // ✅ แค่ return void
+    return;
   }
 
   const filename = req.file.filename;
@@ -155,7 +142,4 @@ app.get("/api", (_req: Request, res: Response) => {
   });
 });
 
-// Start server
-app.listen(5000, "0.0.0.0", () => {
-  console.log(`🚀 Server is running on http://localhost:${port}`);
-});
+export default app;
