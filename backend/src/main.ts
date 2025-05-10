@@ -6,6 +6,8 @@ import path from "path";
 import rateLimit from "express-rate-limit";
 import fs from "fs";
 import { spawn } from "child_process";
+import cowsay from "cowsay";
+import { WebSocketServer, WebSocket } from "ws";
 
 // Import routes
 import dogRoutes from "./routes/dog.route";
@@ -47,7 +49,6 @@ app.use(cors());
 const rootDir = path.resolve(__dirname, "..");
 app.use("/api/uploads", express.static(path.join(rootDir, "Uploads")));
 
-
 // Setup Swagger
 import { setupSwagger } from "./config/swagger";
 setupSwagger(app);
@@ -63,7 +64,12 @@ const limiter = rateLimit({
 // app.use(limiter); // Apply rate limiting to all requests
 
 app.get("/api/version", (req: Request, res: Response) => {
-  res.json({ version: "1.0.0" });
+  console.log(
+    cowsay.say({
+      text: "version 1.0.0",
+    })
+  );
+  res.json({ message: "version 1.0.0" });
 });
 
 //Routes
@@ -80,7 +86,7 @@ app.post("/upload", upload.single("image"), (req: Request, res: Response) => {
   if (!req.file) {
     console.log("No image uploaded or invalid format");
     res.status(400).send("No image uploaded");
-    return; 
+    return;
   }
 
   const filename = req.file.filename;
@@ -127,6 +133,33 @@ app.get("/api", (_req: Request, res: Response) => {
   res.json({
     message: "Server is running. Use /upload to upload an image.",
     predictions: predict,
+  });
+});
+
+// WebSocket server
+const wss = new WebSocketServer({ port: 8080 });
+console.log("WebSocket server is running on port 8080");
+
+wss.on("connection", (ws: WebSocket) => {
+  console.log("Client connected");
+
+  ws.on("message", (message: string) => {
+    try {
+      const { status, value } = JSON.parse(message);
+
+      const response = {
+        message: "This is a message from the server",
+        status: status,
+        value: value,
+      };
+
+      ws.send(JSON.stringify(response));
+    } catch (err) {
+      console.log("error", err);
+    }
+  });
+  ws.on("close", () => {
+    console.log("Client disconnected");
   });
 });
 
