@@ -28,7 +28,7 @@ services:
       - .env
     volumes:
       - FEEDIO_POSTGRES_DATA:/var/lib/postgresql/data
-    ports:
+    ports:8
       - "5432:5432"
     restart: unless-stopped
 
