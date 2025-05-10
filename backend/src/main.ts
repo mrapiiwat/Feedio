@@ -1,11 +1,11 @@
-import express, { Request, Response, Express } from "express";
-import rateLimit from "express-rate-limit";
-import { spawn } from "child_process";
+import express, { Request, Response } from "express";
 import cors from "cors";
 import morgan from "morgan";
 import multer from "multer";
 import path from "path";
+import rateLimit from "express-rate-limit";
 import fs from "fs";
+import { spawn } from "child_process";
 
 // Import routes
 import dogRoutes from "./routes/dog.route";
@@ -28,18 +28,10 @@ if (!fs.existsSync(uploadDir)) {
 
 // Multer config
 const storage = multer.diskStorage({
-  destination: (
-    req: Request,
-    _file: Express.Multer.File,
-    cb: multer.FileFilterCallback
-  ) => {
+  destination: (_req, _file, cb) => {
     cb(null, uploadDir);
   },
-  filename: (
-    req: Request,
-    file: Express.Multer.File,
-    cb: multer.FileFilterCallback
-  ) => {
+  filename: (_req, file, cb) => {
     cb(null, file.originalname);
   },
 });
@@ -55,16 +47,12 @@ app.use(cors());
 const rootDir = path.resolve(__dirname, "..");
 app.use("/api/uploads", express.static(path.join(rootDir, "Uploads")));
 
+
 // Setup Swagger
 import { setupSwagger } from "./config/swagger";
 setupSwagger(app);
 
-app.use(morgan("dev"));
-app.use(express.json());
-app.use(cors());
-
 setupSwagger(app); // Initialize Swagger documentation
-
 // Limit requests per IP
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
@@ -92,7 +80,7 @@ app.post("/upload", upload.single("image"), (req: Request, res: Response) => {
   if (!req.file) {
     console.log("No image uploaded or invalid format");
     res.status(400).send("No image uploaded");
-    return;
+    return; 
   }
 
   const filename = req.file.filename;
