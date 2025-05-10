@@ -53,7 +53,7 @@ const FeederDetailPage: React.FC = () => {
         food_capa: feedAmount,
         current_food: feedAmount,
       }
-      alert("กำลังให้อาหาร...");
+      
       const response = await fetch(`${API_BASE_URL}/feeder`, {
         method: "POST",
         headers: {
@@ -61,7 +61,7 @@ const FeederDetailPage: React.FC = () => {
         },
         body: JSON.stringify(payload),
       });
-
+      
       if (!response.ok) {
         alert("ไม่สามารถให้อาหารได้")
       }

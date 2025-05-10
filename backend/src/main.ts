@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import morgan from "morgan";
 import dotenv from "dotenv";
-// import rateLimit from "express-rate-limit";
+import rateLimit from "express-rate-limit";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -40,24 +40,22 @@ const upload = multer({
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(cors());
-const rootDir = path.resolve(__dirname, "..");
-app.use("/api/uploads", express.static(path.join(rootDir, "Uploads")));
-
+app.use("/uploads", express.static(path.join(__dirname, "Uploads")));
 
 // Setup Swagger
 import { setupSwagger } from "./config/swagger";
 setupSwagger(app);
 
 // Rate limiter
-// const limiter = rateLimit({
-//   windowMs: 1 * 60 * 1000,
-//   max: 10,
-//   message: "Too many requests, please try again later.",
-// });
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 10,
+  message: "Too many requests, please try again later.",
+});
 // app.use(limiter);
 
 // Version route
-app.get("/version", (_req, res) => {
+app.get("/api/version", (_req, res) => {
   res.json({ version: "1.0.0" });
 });
 
@@ -70,28 +68,7 @@ import notificationRoutes from "./routes/notification.route";
 import weightSensorRoutes from "./routes/wrightSensor.route";
 import historyRoutes from "./routes/history.route";
 
-const port = process.env.PORT ? parseInt(process.env.PORT) : 5000;
-const app = express();
-
-app.use(morgan("dev"));
-app.use(express.json());
-app.use(cors());
-
-setupSwagger(app); // Initialize Swagger documentation
-// Limit requests per IP
-const limiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 10,
-  message: "Too many requests, please try again later.",
-});
-
-app.use(limiter); // Apply rate limiting to all requests
-
-app.get("/api/version", (req, res) => {
-  res.json({ version: "1.0.0" });
-});
-
-//Routes
+// API Routes
 app.use("/api", dogRoutes);
 app.use("/api", recommendationRoutes);
 app.use("/api", feederRoutes);
@@ -112,7 +89,7 @@ app.post("/upload", upload.single("image"), (req: Request, res: Response) => {
   const filePath = path.join(uploadDir, filename);
   console.log(`Image saved as ${filename}, size: ${req.file.size} bytes`);
 
-  const pythonProcess = spawn("python", ["../predict.py", filePath], {
+  const pythonProcess = spawn("python", ["predict.py", filePath], {
     env: { ...process.env, PYTHONIOENCODING: "utf-8" },
   });
 
@@ -148,7 +125,7 @@ app.post("/upload", upload.single("image"), (req: Request, res: Response) => {
 });
 
 // Root route (summary + uploaded predictions)
-app.get("/api", (_req: Request, res: Response) => {
+app.get("/", (_req: Request, res: Response) => {
   res.json({
     message: "Server is running. Use /upload to upload an image.",
     predictions: predict,
@@ -156,6 +133,6 @@ app.get("/api", (_req: Request, res: Response) => {
 });
 
 // Start server
-app.listen(5000, "0.0.0.0", () => {
+app.listen(port, "0.0.0.0", () => {
   console.log(`🚀 Server is running on http://localhost:${port}`);
 });
