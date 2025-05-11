@@ -76,7 +76,7 @@ const FeederDetailPage: React.FC = () => {
       }
       const payload = {
         status: 1,
-        value: feedAmount,
+        value: feedAmount, // ส่งค่าเลขตรงตามที่เลือกจาก dropdown
       };
       socketRef.current.send(JSON.stringify(payload));
       alert("กำลังให้อาหาร...");
@@ -106,44 +106,8 @@ const FeederDetailPage: React.FC = () => {
         <p className="text-center text-gray-500">กำลังโหลดข้อมูล...</p>
       ) : (
         <div className="max-w-2xl mx-auto space-y-6">
-          {/* รูปจากกล้อง */}
-          <div className="flex justify-center">
-            {cameraImageUrl ? (
-              <img
-                src={cameraImageUrl}
-                alt="ภาพจากกล้อง"
-                className="w-[250px] h-[200px] rounded-xl shadow object-cover"
-              />
-            ) : (
-              <p className="text-gray-400">ไม่พบภาพจากกล้อง</p>
-            )}
-          </div>
-
           {/* ตารางสถานะมื้ออาหาร */}
           <MealStatusTable />
-          {/* <div className="bg-white rounded-xl shadow p-6">
-            <h2 className="text-xl font-bold mb-4 text-[#4D2C1D]">🍽 สถานะมื้ออาหารวันนี้</h2>
-            <ul className="space-y-2">
-              <li className="flex justify-between">
-                ☀️ เช้า (07:00)
-                <span className={`font-bold ${morningDone ? "text-green-600" : "text-gray-400"}`}>
-                  {morningDone ? "✔️ ให้แล้ว" : "⏳ ยังไม่ได้ให้"}
-                </span>
-              </li>
-              <li className="flex justify-between">
-                🌤 กลางวัน (12:00)
-                <span className={`font-bold ${noonDone ? "text-green-600" : "text-gray-400"}`}>
-                  {noonDone ? "✔️ ให้แล้ว" : "⏳ ยังไม่ได้ให้"}
-                </span>
-              </li>
-              <li className="flex justify-between">
-                🌙 เย็น (18:00)
-                <span className={`font-bold ${eveningDone ? "text-green-600" : "text-gray-400"}`}>
-                  {eveningDone ? "✔️ ให้แล้ว" : "⏳ ยังไม่ได้ให้"}
-                </span>
-              </li>
-            </ul>
-          </div> */}
 
           {/* ป้อนอาหารเอง */}
           <div className="bg-white rounded-xl shadow p-6 text-center">
@@ -155,18 +119,21 @@ const FeederDetailPage: React.FC = () => {
               htmlFor="amount"
               className="block mb-1 text-sm font-medium text-[#4D2C1D]"
             >
-              ระบุปริมาณอาหาร (กรัม)
+              ระบุปริมาณอาหาร (หน่วย)
             </label>
             <div className="space-x-3">
-              <input
-                type="number"
+              <select
                 id="amount"
                 className="w-full max-w-xs border border-gray-300 rounded-md px-3 py-2 mb-4 text-center"
                 value={feedAmount}
                 onChange={(e) => setFeedAmount(Number(e.target.value))}
-                min={1}
-                max={500}
-              />
+              >
+                {[...Array(10)].map((_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {i + 1}
+                  </option>
+                ))}
+              </select>
 
               <button
                 className="bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-2 px-6 rounded-full shadow"
@@ -181,16 +148,6 @@ const FeederDetailPage: React.FC = () => {
                   {successMessage}
                 </div>
               )}
-
-              <p className="text-sm mt-4 text-gray-600">
-                ปริมาณอาหารที่เหลือในถัง:{" "}
-                <span className="font-semibold text-red-600">
-                  {feederData?.current_food?.toFixed(1) || "0"} กรัม
-                </span>
-              </p>
-              <p className="text-xs text-gray-400">
-                อัปเดตล่าสุด: {lastFeedTime} น.
-              </p>
             </div>
           </div>
 

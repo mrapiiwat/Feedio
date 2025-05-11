@@ -153,17 +153,20 @@ export default function FeederModal(props: IProps) {
                       htmlFor="amount"
                       className="block mb-1 text-sm font-medium text-[#4D2C1D]"
                     >
-                      ระบุปริมาณอาหาร (กรัม)
+                      ระบุปริมาณอาหาร (หน่วย)
                     </label>
-                    <input
-                      type="number"
+                    <select
                       id="amount"
                       value={feedAmount}
                       onChange={(e) => setFeedAmount(Number(e.target.value))}
                       className="w-full border border-gray-300 rounded-md px-3 py-2 mb-4 text-center"
-                      min={1}
-                      max={500}
-                    />
+                    >
+                      {[...Array(10)].map((_, i) => (
+                        <option key={i + 1} value={i + 1}>
+                          {i + 1}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
               </div>
