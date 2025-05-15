@@ -128,11 +128,14 @@ const FeederDetailPage: React.FC = () => {
                 value={feedAmount}
                 onChange={(e) => setFeedAmount(Number(e.target.value))}
               >
-                {[...Array(10)].map((_, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    {i + 1}
+                {[...Array(6)].map((_, i) => {
+                  const value = 50 + i * 10;
+                  return (
+                  <option key={value} value={value}>
+                    {value}
                   </option>
-                ))}
+                  );
+                })}
               </select>
 
               <button

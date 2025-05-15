@@ -73,9 +73,7 @@ const Navbar: React.FC = () => {
           </li>
 
           {/* 🔔 Notification */}
-          <li>
-            <Notification />
-          </li>
+       
         </ul>
       </nav>
     </div>
