@@ -65,7 +65,7 @@ const HomePage: React.FC = () => {
       setLeftoverWeeklyFood(leftover);
     } catch (err) {
       console.error(err);
-      setError("เกิดข้อผิดพลาดในการโหลดข้อมูล");
+      setError("");
     }
   };
 
