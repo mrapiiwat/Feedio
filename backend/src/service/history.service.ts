@@ -33,15 +33,7 @@ export const getHistoryById = async (id: string) => {
 
 export const createHistory = async (historyData: any) => {  
   const history = await prisma.feeding_History.create({
-    data: {
-      Feeder_ID: historyData.feederID,
-      Dog_ID: historyData.dogID,
-      Date: historyData.date,
-      Time: historyData.time,
-      Given_Amount: historyData.given_Amount,
-      Remaining_Amount: historyData.remaining_Amount,
-      Image_Captured: historyData.image_Captured,
-    },
+    data: historyData
   });
   return history;
 };
