@@ -1,0 +1,319 @@
+import express, { Request, Response } from "express";
+import cors from "cors";
+import morgan from "morgan";
+import dotenv from "dotenv";
+// import rateLimit from "express-rate-limit";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import { spawn } from "child_process";
+import http from "http";
+import { Server } from "socket.io";
+
+// Config .env
+dotenv.config();
+
+const port = process.env.PORT ? parseInt(process.env.PORT) : 5000;
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*", // อนุญาตการเชื่อมต่อจากทุก origin
+    methods: ["GET", "POST"]
+  }
+});
+app.use(morgan("dev"));
+app.use(express.json());
+app.use(cors());
+
+const predict: string[] = [];
+
+// เก็บข้อมูลรูปภาพและเวลาล่าสุด
+interface ImageData {
+  path: string;
+  timestamp: Date;
+  prediction: string;
+  lastSeen?: string; // เพิ่ม property lastSeen และทำให้เป็น optional ด้วย ? เพื่อให้เข้ากับข้อมูลเดิม
+}
+
+let latestImageData: ImageData | null = null;
+
+// Create Uploads folder if not exists
+const uploadDir = path.join(__dirname, "../Uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+
+// Multer config
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (_req, file, cb) => {
+    // ใช้ชื่อไฟล์เป็น temp.jpg เพื่อใช้ในการทำนายก่อน แล้วค่อยเปลี่ยนชื่อ/ลบตามผลการทำนาย
+    cb(null, 'temp.jpg');
+  },
+});
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+});
+
+// Middleware
+app.use(morgan("dev"));
+app.use(express.json());
+app.use(cors());
+const rootDir = path.resolve(__dirname, "..");
+app.use("/api/uploads", express.static(path.join(rootDir, "Uploads")));
+
+
+// Setup Swagger
+import { setupSwagger } from "./config/swagger";
+setupSwagger(app);
+
+// Rate limiter
+// const limiter = rateLimit({
+//   windowMs: 1 * 60 * 1000,
+//   max: 10,
+//   message: "Too many requests, please try again later.",
+// });
+// app.use(limiter);
+
+// Version route
+app.get("/version", (_req, res) => {
+  res.json({ version: "1.0.0" });
+});
+
+// Import routes
+import dogRoutes from "./routes/dog.route";
+import recommendationRoutes from "./routes/recommendation.route";
+import feederRoutes from "./routes/feeder.route";
+import scheduleRoutes from "./routes/schedule.routes";
+import notificationRoutes from "./routes/notification.route";
+import weightSensorRoutes from "./routes/wrightSensor.route";
+import historyRoutes from "./routes/history.route";
+
+
+setupSwagger(app); // Initialize Swagger documentation
+// Limit requests per IP
+// const limiter = rateLimit({
+//   windowMs: 1 * 60 * 1000, // 1 minute
+//   max: 10,
+//   message: "Too many requests, please try again later.",
+// });
+
+// app.use(limiter); // Apply rate limiting to all requests
+
+app.get("/api/version", (req, res) => {
+  res.json({ version: "1.0.0" });
+});
+
+//Routes
+app.use("/api", dogRoutes);
+app.use("/api", recommendationRoutes);
+app.use("/api", feederRoutes);
+app.use("/api", scheduleRoutes);
+app.use("/api", notificationRoutes);
+app.use("/api", weightSensorRoutes);
+app.use("/api", historyRoutes);
+
+// Image upload + Python predict route
+app.post("/upload", upload.single("image"), (req: Request, res: Response) => {
+  if (!req.file) {
+    console.log("No image uploaded or invalid format");
+    res.status(400).send("No image uploaded");
+    return; // แค่ return void
+  }
+  
+  // ยกเลิกการบันทึกรูปที่ไม่ใช่สุนัข (แต่ยังคงบันทึกรูปที่อัปโหลดมาในช่วงการทำนาย)
+
+  const filename = req.file.filename;
+  const filePath = path.join(uploadDir, filename);
+  console.log(`Image saved as ${filename}, size: ${req.file.size} bytes`);
+
+  const pythonProcess = spawn("python", [path.join(__dirname, "predict.py"), filePath], {
+    env: { ...process.env, PYTHONIOENCODING: "utf-8" },
+  });
+  let prediction = "";
+  let errorOutput = "";
+
+  pythonProcess.stdout.on("data", (data: Buffer) => {
+    prediction += data.toString();
+  });
+
+  pythonProcess.stderr.on("data", (data: Buffer) => {
+    const errorMessage = data.toString("utf8");
+    if (!errorMessage.includes("Traceback")) {
+      return;
+    }
+    errorOutput += errorMessage;
+  });
+
+  pythonProcess.on("close", (code: number) => {
+    if (code === 0) {
+      const pred = prediction.trim();
+      console.log(`AI Prediction for ${filename}: ${pred}`);
+      predict.push(pred);
+      
+      // ถ้าพบว่าเป็นสุนัข ให้เปลี่ยนชื่อไฟล์เป็น dog.jpg เลย (ไม่ต้องสร้างไฟล์ใหม่)
+      console.log("Is dog?", pred.toLowerCase());
+      if (pred.toLowerCase() === 'dogs') {
+        const dogImagePath = path.join(uploadDir, 'dog.jpg');
+        // ใช้ renameSync แทน copyFileSync เพื่อเปลี่ยนชื่อไฟล์แทนการคัดลอก
+        try {
+          // หากมีไฟล์ dog.jpg อยู่แล้ว ให้ลบออกก่อนเพื่อป้องกันข้อผิดพลาด
+          if (fs.existsSync(dogImagePath)) {
+            fs.unlinkSync(dogImagePath);
+          }
+          fs.renameSync(filePath, dogImagePath);
+          
+          // เก็บข้อมูลรูปภาพล่าสุดและเวลา
+          const timestamp = new Date();
+          latestImageData = {
+            // แก้ไขเส้นทางที่ซ้ำซ้อน จาก /api/uploads เป็น /uploads เพราะ API_BASE_URL มี /api อยู่แล้ว
+            path: '/uploads/dog.jpg',
+            timestamp: timestamp,
+            prediction: pred,
+            lastSeen: timestamp.toLocaleString() // เพิ่มเวลาที่เจอหมาล่าสุด
+          };
+          
+          // ส่งข้อมูลไปยัง frontend ผ่าน Socket.IO
+          io.emit('new-image', latestImageData);
+          console.log('Dog image saved and socket event emitted:', latestImageData);
+        } catch (err) {
+          console.error('Error renaming file to dog.jpg:', err);
+        }
+      } else {
+        // ถ้าไม่ใช่สุนัข เราจะไม่เก็บไฟล์ไว้ โดยจะลบไฟล์ที่ไม่ใช่สุนัขหลังจากทำนายเสร็จ
+        console.log('Not a dog, removing uploaded image:', filePath);
+        try {
+          // ลบไฟล์ที่ไม่ใช่สุนัข
+          fs.unlinkSync(filePath);
+        } catch (err) {
+          console.error('Error deleting non-dog image:', err);
+        }
+      }
+      
+      res.status(200).json({
+        message: "Image saved",
+        prediction: pred,
+      });
+    } else {
+      console.error(`Python script error: ${errorOutput}`);
+      res.status(500).send(`Error processing image: ${errorOutput}`);
+    }
+  });
+});
+
+// Root route (summary + uploaded predictions)
+app.get("/api", (_req: Request, res: Response) => {
+  res.json({
+    message: "Server is running. Use /upload to upload an image.",
+    predictions: predict,
+  });
+});
+
+// Socket.IO connections
+io.on('connection', (socket) => {
+  console.log('Client connected to socket.io:', socket.id);
+  
+  // เมื่อมีการเชื่อมต่อใหม่ ส่งข้อมูลรูปภาพล่าสุดให้ client
+  if (latestImageData) {
+    socket.emit('new-image', latestImageData);
+  }
+  
+  // เมื่อมีการตัดการเชื่อมต่อ
+  socket.on('disconnect', () => {
+    console.log('Client disconnected:', socket.id);
+  });
+});
+
+// API endpoint สำหรับขอข้อมูลรูปภาพล่าสุด
+app.get('/latest-image', (_req: Request, res: Response) => {
+  // ใช้โค้ดเดียวกับ /api/latest-image เพื่อไม่ให้ซ้ำซ้อน
+  if (latestImageData) {
+    console.log('Serving latest image data from memory:', latestImageData.path);
+    res.json(latestImageData);
+  } else {
+    // ถ้าไม่มีข้อมูลในหน่วยความจำ ให้ตรวจสอบว่ามีไฟล์ dog.jpg ในโฟลเดอร์ upload หรือไม่
+    const dogImagePath = path.join(uploadDir, 'dog.jpg');
+    
+    if (fs.existsSync(dogImagePath)) {
+      // ถ้ามีไฟล์ dog.jpg ให้ดึงข้อมูลของไฟล์
+      try {
+        const stats = fs.statSync(dogImagePath);
+        const lastModified = stats.mtime; // เวลาที่ไฟล์ถูกแก้ไขล่าสุด
+        
+        // สร้างข้อมูลรูปภาพจากไฟล์ที่พบ
+        const imageData = {
+          path: '/uploads/dog.jpg',
+          timestamp: lastModified,
+          prediction: 'dogs',
+          lastSeen: lastModified.toLocaleString() // เพิ่มเวลาที่เจอหมาล่าสุด
+        };
+        
+        console.log('Serving latest image data from file system:', imageData.path, 'Last modified:', imageData.lastSeen);
+        res.json(imageData);
+        
+        // อัปเดตข้อมูลในหน่วยความจำ
+        latestImageData = imageData;
+      } catch (err) {
+        console.error('Error reading dog.jpg file stats:', err);
+        res.status(500).json({ message: 'Error reading dog image file' });
+      }
+    } else {
+      // ถ้าไม่พบไฟล์ dog.jpg ส่งข้อความว่ายังไม่เคยมีรูปหมา
+      console.log('No dog image file found in uploads directory');
+      res.status(404).json({ message: 'ยังไม่เคยมีรูปหมา' });
+    }
+  }
+});
+
+// เพิ่ม endpoint เดียวกันอีกเส้นทางเพื่อรองรับการเรียกจาก frontend
+app.get('/api/latest-image', (_req: Request, res: Response) => {
+  console.log("Checking for latest dog image");
+  
+  // ตรวจสอบว่ามีข้อมูลรูปล่าสุดหรือไม่
+  if (latestImageData) {
+    console.log('Serving latest image data from memory:', latestImageData.path);
+    res.json(latestImageData);
+  } else {
+    // ถ้าไม่มีข้อมูลในหน่วยความจำ ให้ตรวจสอบว่ามีไฟล์ dog.jpg ในโฟลเดอร์ upload หรือไม่
+    const dogImagePath = path.join(uploadDir, 'dog.jpg');
+    
+    if (fs.existsSync(dogImagePath)) {
+      // ถ้ามีไฟล์ dog.jpg ให้ดึงข้อมูลของไฟล์
+      try {
+        const stats = fs.statSync(dogImagePath);
+        const lastModified = stats.mtime; // เวลาที่ไฟล์ถูกแก้ไขล่าสุด
+        
+        // สร้างข้อมูลรูปภาพจากไฟล์ที่พบ
+        const imageData = {
+          path: '/uploads/dog.jpg',
+          timestamp: lastModified,
+          prediction: 'dogs',
+          lastSeen: lastModified.toLocaleString() // เพิ่มเวลาที่เจอหมาล่าสุด
+        };
+        
+        console.log('Serving latest image data from file system:', imageData.path, 'Last modified:', imageData.lastSeen);
+        res.json(imageData);
+        
+        // อัปเดตข้อมูลในหน่วยความจำ
+        latestImageData = imageData;
+      } catch (err) {
+        console.error('Error reading dog.jpg file stats:', err);
+        res.status(500).json({ message: 'Error reading dog image file' });
+      }
+    } else {
+      // ถ้าไม่พบไฟล์ dog.jpg ส่งข้อความว่ายังไม่เคยมีรูปหมา
+      console.log('No dog image file found in uploads directory');
+      res.status(404).json({ message: 'ยังไม่เคยมีรูปหมา' });
+    }
+  }
+});
+
+// Start server
+server.listen(5000, "0.0.0.0", () => {
+  console.log(`🚀 Server is running on http://localhost:${port}`);
+  console.log(`🔌 Socket.IO server is also running`);
+});
